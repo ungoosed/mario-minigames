@@ -7,7 +7,7 @@ async function getGame() {
 
 const setPhaserFocus = () => {
     const phaser = document.getElementById("phaser");
-    if (phaser) phaser.focus();
+    // if (phaser) phaser.focus();
 };
 
 export default {
@@ -46,7 +46,7 @@ export default {
 </script>
 <template>
     <div>
+        <Chat id="hi" />
         <PhaserGame :createGame="createGame" v-if="createGame" />
-        <Websocket />
     </div>
 </template>

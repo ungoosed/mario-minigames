@@ -7,6 +7,8 @@ export default defineNuxtConfig({
       websocket: true,
     },
   },
+  css: ["~/assets/css/main.css"],
+
   modules: ["@vueuse/nuxt"],
   plugins: [{ src: "node_modules/nuxtjs-phaser", mode: "client" }],
 });
