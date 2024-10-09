@@ -20,7 +20,7 @@ function sendData() {
 
 <template>
     <div>
-        <h1>Epic Chat!</h1>
+        <h1>Chat!</h1>
         <h2>Set username!</h2>
         <input v-model="username" />
         <h2>Send Message!</h2>

@@ -1,25 +1,30 @@
-<script>
+<script lang="ts">
 import PhaserGame from "nuxtjs-phaser/phaserGame.vue";
+
 async function getGame() {
-    const { createGame } = await import("~/game/game");
+    const { createGame } = await import("~/game/main");
     return createGame;
+}
+
+declare interface IndexPageData {
+    createGame?: () => Phaser.Game;
 }
 
 const setPhaserFocus = () => {
     const phaser = document.getElementById("phaser");
-    // if (phaser) phaser.focus();
+    if (phaser) phaser.focus();
 };
 
 export default {
     name: "IndexPage",
     components: { PhaserGame },
-    data() {
+    data(): IndexPageData {
         return {
             createGame: undefined,
         };
     },
     methods: {
-        emitPhaserEvent(eventName) {
+        emitPhaserEvent(eventName: string) {
             this.$phaser?.eventEmitter?.emit(eventName, "default");
         },
         jump() {
