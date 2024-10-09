@@ -1,0 +1,85 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "tilemap.json",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "platformTiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tilemap.json": {
+            "scale": 0.25,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -74,
+                "y": 4570
+            }
+        },
+        "tilemap.json#platformTiles": {
+            "scaleInDock": 1
+        },
+        "tilemap.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 9,
+                "y": 285
+            }
+        },
+        "tilemap.tmx#platformTiles": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "untitled.json": {
+            "scale": 0.88505859375,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -1.1298686968993934,
+                "y": 127.6751627496414
+            }
+        },
+        "untitled.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": -242,
+                "y": 15
+            }
+        },
+        "untitled.tmx#platformTiles": {
+            "scaleInDock": 1
+        }
+    },
+    "last.exportedFilePath": "C:/Coding/Web Development/Websites/burger/public/assets",
+    "last.imagePath": "C:/Coding/Web Development/Websites/burger/public/assets",
+    "map.fixedSize": false,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "platformTiles.tsx",
+        "tilemap.json"
+    ],
+    "project": "platforms.tiled-project",
+    "recentFiles": [
+        "platformTiles.tsx",
+        "tilemap.json",
+        "tilemap.tmx",
+        "untitled.tmx",
+        "untitled.json"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
