@@ -27,6 +27,9 @@ export default {
         emitPhaserEvent(eventName: string) {
             this.$phaser?.eventEmitter?.emit(eventName, "default");
         },
+        setData(key: string, data: any) {
+            console.log(this.$phaser?.game.registry.set(key, data));
+        },
         jump() {
             this.emitPhaserEvent("jump");
         },
@@ -35,12 +38,6 @@ export default {
         },
         walkRight() {
             this.emitPhaserEvent("walkRight");
-        },
-        pause() {
-            this.emitPhaserEvent("pause");
-        },
-        resume() {
-            this.emitPhaserEvent("resume");
         },
     },
     async mounted() {
@@ -53,5 +50,6 @@ export default {
     <div>
         <Chat id="hi" />
         <PhaserGame :createGame="createGame" v-if="createGame" />
+        <button @click="setData('name', 'sigma')">set Burgers: to asher</button>
     </div>
 </template>
