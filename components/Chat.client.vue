@@ -12,9 +12,16 @@ watch(data, (newValue) => {
     history.value.unshift(incoming.username + ": " + incoming.message);
 });
 function sendData() {
-    history.value.unshift(username.value + ": " + message.value);
-    send(JSON.stringify({ username: username.value, message: message.value }));
-    message.value = "";
+    if (message.value) {
+        history.value.unshift(username.value + ": " + message.value);
+        send(
+            JSON.stringify({
+                username: username.value,
+                message: message.value,
+            }),
+        );
+        message.value = "";
+    }
 }
 </script>
 
