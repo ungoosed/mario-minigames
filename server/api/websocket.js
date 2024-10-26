@@ -1,9 +1,9 @@
-const room = "ROOM";
+const room = "chat";
+
 export default defineWebSocketHandler({
   open(peer) {
-    // console.log("opened WS", peer);
     peer.subscribe(room);
-    peer.publish(room, "joined chat");
+    peer.publish(room, '{username: "Anonymous", message: "joined chat"}');
   },
   close(peer) {
     console.log("closed ws");
@@ -12,8 +12,6 @@ export default defineWebSocketHandler({
     console.log("error!", peer, error);
   },
   message(peer, message) {
-    // console.log("message on ws", peer, message);
-    // peer.publish(room, message.text());
     peer.publish(room, message.text());
   },
 });

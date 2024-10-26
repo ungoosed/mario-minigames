@@ -1,55 +1,33 @@
-<script lang="ts">
-import PhaserGame from "nuxtjs-phaser/phaserGame.vue";
+<script setup>
+//supabase stuff
+import { createClient } from "@supabase/supabase-js";
+const supabase = createClient(
+    "https://thvglmcnvcjyizzyyfsc.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRodmdsbWNudmNqeWl6enl5ZnNjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyOTMxMzE2NywiZXhwIjoyMDQ0ODg5MTY3fQ.EKzeV_hn69gs2qLuP4__1FYb22iRa3CBqBUIWdO3YkI",
+);
+const countries = ref([]);
 
-async function getGame() {
-    const { createGame } = await import("~/game/main");
-    return createGame;
+async function getCountries() {
+    const { data } = await supabase.from("countries").select();
+    countries.value = data;
+    // const { error } = await supabase
+    //     .from("countries")
+    //     .insert({ name: "Denmark" });
 }
 
-declare interface IndexPageData {
-    createGame?: () => Phaser.Game;
-}
-
-const setPhaserFocus = () => {
-    const phaser = document.getElementById("phaser");
-    if (phaser) phaser.focus();
-};
-
-export default {
-    name: "IndexPage",
-    components: { PhaserGame },
-    data(): IndexPageData {
-        return {
-            createGame: undefined,
-        };
-    },
-    methods: {
-        emitPhaserEvent(eventName: string) {
-            this.$phaser?.eventEmitter?.emit(eventName, "default");
-        },
-        setData(key: string, data: any) {
-            console.log(this.$phaser?.game.registry.set(key, data));
-        },
-        jump() {
-            this.emitPhaserEvent("jump");
-        },
-        walkLeft() {
-            this.emitPhaserEvent("walkLeft");
-        },
-        walkRight() {
-            this.emitPhaserEvent("walkRight");
-        },
-    },
-    async mounted() {
-        this.createGame = await getGame();
-        this.$nextTick(() => setPhaserFocus());
-    },
-};
+onMounted(() => {
+    getCountries();
+});
 </script>
+
 <template>
     <div>
-        <Chat id="hi" />
-        <PhaserGame :createGame="createGame" v-if="createGame" />
-        <button @click="setData('name', 'sigma')">set Burgers: to asher</button>
+        <ul>
+            <!-- <li v-for="country in countries" :key="country.id">
+                {{ country.name }}
+            </li> -->
+        </ul>
+        <!-- <Chat id="hi" /> -->
+        <Game />
     </div>
 </template>

@@ -7,7 +7,7 @@ export class Preloader extends Scene {
 
   init() {
     //  We loaded this image in our Boot Scene, so we can display it here
-    this.add.image(512, 384, "background");
+    // this.add.image(512, 384, "background");
 
     //  A simple progress bar. This is the outline of the bar.
     this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
@@ -23,44 +23,13 @@ export class Preloader extends Scene {
   }
 
   preload() {
-    //  Load the assets for the game - Replace with your own assets
-    this.load.setPath("assets");
-    this.load.image("qwanoes", "QC.jpg");
-    this.load.spritesheet("startButton", "startbutton.png", {
-      frameWidth: 32,
-      frameHeight: 16,
-    });
-    this.load.image("burger", "burger.png");
-    this.load.image("pepper", "pepper.png");
-    this.load.image("burgerlogo", "burgerlogo.png");
-    this.load.image("platformTiles", "platformTiles.png");
-    this.load.image("floor", "floor.png");
-    this.load.tilemapTiledJSON("map", "tilemap.json");
-    this.load.image("player1Info", "player1Info.png");
-    this.load.image("player2Info", "player2Info.png");
-
-    this.load.setPath("assets/characters");
-    this.load.spritesheet("sausage", "sausage.png", {
-      frameWidth: 8,
-      frameHeight: 16,
-    });
-    this.load.spritesheet("peter-pepper", "peter-pepper.png", {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-
-    this.load.setPath("assets/buttons");
-    this.load.spritesheet("choosePeter", "peter-pepper-button.png", {
-      frameWidth: 64,
-      frameHeight: 16,
-    });
-    this.load.spritesheet("chooseSausage", "sausage-button.png", {
-      frameWidth: 64,
-      frameHeight: 16,
-    });
+    this.load.setPath("assets/menu");
+    this.load.image("menu-background", "menu-background.png");
+    this.load.image("minigame-rainbow.png", "menu-background.png");
+    this.load.image("scroll-strip-background", "scroll-strip-background.png");
   }
 
   create() {
-    this.scene.start("ChooseCharacter");
+    this.scene.start("MainMenu");
   }
 }

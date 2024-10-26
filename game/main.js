@@ -1,16 +1,14 @@
 import { Boot } from "./scenes/Boot";
-import { ChooseCharacter } from "./scenes/ChooseCharacter";
+import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 
-//  Find out more information about the Game Config at:
-//  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 export const createGame = (config = {}) =>
   new Phaser.Game({
     type: Phaser.AUTO,
-    width: 1024,
-    height: 860,
+    width: 256,
+    height: 384,
     parent: "phaser",
-    backgroundColor: "#028af8",
+    backgroundColor: "#fdf6e3",
     pixelArt: true,
     physics: {
       default: "arcade",
@@ -18,5 +16,5 @@ export const createGame = (config = {}) =>
         gravity: { y: 900 },
       },
     },
-    scene: [Boot, Preloader, ChooseCharacter],
+    scene: [Boot, Preloader, MainMenu],
   });

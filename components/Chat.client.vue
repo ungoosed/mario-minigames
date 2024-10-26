@@ -8,11 +8,13 @@ const history = ref([]);
 watch(data, (newValue) => {
     console.log(newValue);
     let incoming = JSON.parse(newValue);
-
     history.value.unshift(incoming.username + ": " + incoming.message);
 });
 function sendData() {
     if (message.value) {
+        if (username.value == "") {
+            username.value = "Anonymous";
+        }
         history.value.unshift(username.value + ": " + message.value);
         send(
             JSON.stringify({
