@@ -29,9 +29,10 @@ export default defineWebSocketHandler({
         for (let i = 0; i < activeGames.length; i++) {
           roomList.push({
             roomKey: activeGames[i].roomKey,
-            numUsers: activeGames[i].users.length,
+            maxUsers: activeGames[i].maxUsers,
           });
         }
+
         peer.send(
           JSON.stringify({
             type: "data",
@@ -43,7 +44,7 @@ export default defineWebSocketHandler({
         );
       }
     }
-    if (parsed.type == "newroom") {
+    if (parsed.type == "createroom") {
       // params: type, content: {roomkey}
       let used = false;
       for (let i = 0; i < activeGames.length; i++) {
@@ -54,6 +55,7 @@ export default defineWebSocketHandler({
       if (!used) {
         activeGames.push({
           roomKey: parsed.content.roomKey,
+          maxUsers: parsed.content.maxUsers,
           users: {},
           data: { turn: null, game: null },
         });

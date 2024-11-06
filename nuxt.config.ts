@@ -8,6 +8,9 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ["@vueuse/nuxt", "@pinia/nuxt"],
-  plugins: [{ src: "node_modules/nuxtjs-phaser", mode: "client" }],
+  modules: ["@vueuse/nuxt"],
+  plugins: [
+    { src: "node_modules/nuxtjs-phaser", mode: "client" },
+    "~/plugins/mitt.js",
+  ],
 });

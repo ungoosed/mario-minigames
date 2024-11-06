@@ -1,13 +1,11 @@
 <script setup>
 import PhaserGame from "nuxtjs-phaser/phaserGame.vue";
-
 const { status, data, send, open } = useWebSocket(
     `ws://${location.host}/api/minigames`,
 );
 const uuid = ref("");
-const roomList = ref([]);
-const message = ref("");
-
+const { $bus } = useNuxtApp();
+const roomList = useRoomList("roomList");
 watch(data, (message) => {
     let parsed = JSON.parse(message);
     if (parsed.type == "uuid") {
@@ -16,6 +14,7 @@ watch(data, (message) => {
     if (parsed.type == "data") {
         if (parsed.content.type == "roomList") {
             roomList.value = parsed.content.data;
+            $bus.emit("newroomlist");
         }
     }
 });
@@ -25,16 +24,14 @@ function sendData(type, content) {
 function refreshRooms() {
     send(JSON.stringify({ type: "request", content: { type: "roomList" } }));
 }
-function newRoom() {
+function createRoom(roomKey, maxUsers) {
     send(
         JSON.stringify({
-            type: "newroom",
+            type: "createroom",
             uuid: uuid,
-            content: { roomKey: message.value },
+            content: { roomKey: roomKey, maxUsers: maxUsers },
         }),
     );
-    message.value = "";
-    refreshRooms();
 }
 
 const createGame = ref(undefined);
@@ -59,23 +56,35 @@ function setData(key, data) {
 }
 // Lifecycle hook
 onMounted(async () => {
-    sendData("request", { type: "roomList" });
-
+    refreshRooms();
     await getGame();
     nextTick(() => setPhaserFocus());
 });
+// Receive events from phaser
+$bus.on("createroom", (args) => {
+    //implement numplayers stuff
+    //args: roomKey, numPlayers
+    createRoom(args.roomKey, args.maxUsers);
+});
+$bus.on("refreshrooms", () => {
+    //implement numplayers stuff
+    //args: roomKey, numPlayers
+    refreshRooms();
+});
+// $bus.on("joinroom", (key) => {});
 </script>
 
 <template>
-    <h1>Room List</h1>
-    <li v-for="room in roomList">
-        Key: {{ room.roomKey }} users: {{ room.users }}
-    </li>
-    <button @click="refreshRooms()">refresh</button>
-    <form @submit.prevent="newRoom()">
-        <input v-model="message" />
-        <button type="submit">create new room</button>
-    </form>
-    <button @click="sendData('join', { roomKey: 'reindeer' })">new room</button>
     <PhaserGame :createGame="createGame" v-if="createGame" />
 </template>
+<style>
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+</style>
