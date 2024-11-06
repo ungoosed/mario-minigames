@@ -39,6 +39,7 @@ export class Preloader extends Scene {
     this.load.image("dialogue1", "dialogue1.png");
     this.load.image("dialogue2", "dialogue2.png");
     this.load.image("blank-text-background", "blank-text-background.png");
+    this.load.image("num-pages-text", "num-pages-text.png");
 
     this.load.image("num-people-text", "num-people-text.png");
     this.load.spritesheet("num-people-numbers", "num-people-numbers.png", {
