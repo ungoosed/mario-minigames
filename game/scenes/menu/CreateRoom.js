@@ -8,8 +8,10 @@ export class CreateRoom extends Scene {
     super("CreateRoom");
     this.$bus = useNuxtApp().$bus;
   }
-
+  createEventListeners() {}
+  unloadEventListeners() {}
   create() {
+    this.createEventListeners();
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(128, 67, "scroll-strip-background");
@@ -23,7 +25,8 @@ export class CreateRoom extends Scene {
     this.add.image(128, 248, "num-people-text").setOrigin(0.5, 0);
     this.numPeopleNumbers = this.add
       .image(128, 291, "num-people-numbers")
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0)
+      .setFrame(1);
 
     let minigamesTitle1X = this.registry.get("minigamesTitle1");
     let minigamesTitle2X = this.registry.get("minigamesTitle2");
@@ -119,7 +122,7 @@ export class CreateRoom extends Scene {
       //join room you created as the host
     });
 
-    let numPeople = 1;
+    let numPeople = 2;
     this.increasePlayers.on("pointerdown", () => {
       if (numPeople < 4) {
         numPeople++;
@@ -127,16 +130,16 @@ export class CreateRoom extends Scene {
       if (numPeople == 4) {
         this.increasePlayers.setVisible(false);
       }
-      if (numPeople > 1) {
+      if (numPeople > 2) {
         this.decreasePlayers.setVisible(true);
       }
       this.numPeopleNumbers.setFrame(numPeople - 1);
     });
     this.decreasePlayers.on("pointerdown", () => {
-      if (numPeople > 1) {
+      if (numPeople > 2) {
         numPeople--;
       }
-      if (numPeople == 1) {
+      if (numPeople == 2) {
         this.decreasePlayers.setVisible(false);
       }
       if (numPeople < 4) {
@@ -154,5 +157,8 @@ export class CreateRoom extends Scene {
     if (this.minigamesTitle1.x < -128) {
       this.minigamesTitle1.setX(380);
     }
+  }
+  onShutdown() {
+    this.unloadEventListeners();
   }
 }

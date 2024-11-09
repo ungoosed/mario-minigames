@@ -8,114 +8,113 @@ export class JoinRoom extends Scene {
     this.roomList = useRoomList("roomList");
     this.numPages = 1;
     this.currentPage = 1;
+    this.selectedRoom = undefined;
   }
+
   generateRoomButtons() {
-    this.roomButtonsArr.length = 1;
+    this.roomButtonsArr.length = 0;
     this.roomButtonsGroup.clear(true, true);
+
+    if (this.roomList.value.length % 3 == 0) {
+      this.numPages = this.roomList.value.length / 3;
+    } else {
+      this.numPages =
+        (this.roomList.value.length - (this.roomList.value.length % 3)) / 3 + 1;
+    }
+
+    let numEntries = 3;
+    if (
+      this.roomList.value.length % 3 != 0 &&
+      this.currentPage == this.numPages
+    ) {
+      numEntries = this.roomList.value.length % 3;
+    }
     if (this.roomList.value.length <= 4) {
       this.numPages = 1;
+      numEntries = this.roomList.value.length;
       this.currentPage = 1;
       this.decreasePageButton.setVisible(false);
       this.increasePageButton.setVisible(false);
       this.pageNumberTracker.setVisible(false);
       this.pageTextBackground.setVisible(false);
       this.numPagesText.setVisible(false);
-
-      for (let i = 0; i < this.roomList.value.length; i++) {
-        let image = makeHoverable(
-          this.add.image(8, 203 + i * 34, "room-button-select").setOrigin(0, 0),
-        );
-        let name = this.add
-          .text(12, 206 + i * 34, this.roomList.value[i].roomKey)
-          .setOrigin(0, 0);
-        let users = this.add
-          .text(207, 206 + i * 34, "1" + "/" + this.roomList.value[i].maxUsers)
-          .setOrigin(0, 0);
-        image.on("pointerover", () => {
-          name.setPosition(14, 208 + i * 34);
-          users.setPosition(209, 208 + i * 34);
-        });
-        image.on("pointerout", () => {
-          name.setPosition(12, 206 + i * 34);
-
-          users.setPosition(207, 206 + i * 34);
-        });
-        this.roomButtonsArr.push({
-          button: image,
-          name: name,
-          numUsers: users,
-        });
-        this.roomButtonsGroup.addMultiple([image, name, users]);
-      }
     } else {
       this.increasePageButton.setVisible(true);
       this.pageNumberTracker.setVisible(true);
       this.pageTextBackground.setVisible(true);
       this.numPagesText.setVisible(true);
-      if (this.roomList.value.length % 3 == 0) {
-        this.numPages = this.roomList.value.length / 3;
-      } else {
-        this.numPages =
-          (this.roomList.value.length - (this.roomList.value.length % 3)) / 3 +
-          1;
-      }
-
-      let numEntries = 3;
-      if (
-        this.roomList.value.length % 3 != 0 &&
-        this.currentPage == this.numPages
-      ) {
-        numEntries = this.roomList.value.length % 3;
-      }
-      for (let i = 0; i < numEntries; i++) {
-        let image = makeHoverable(
-          this.add.image(8, 203 + i * 34, "room-button-select").setOrigin(0, 0),
-        );
-        let name = this.add
-          .text(
-            12,
-            206 + i * 34,
-            this.roomList.value[i + this.currentPage * 3 - 3]?.roomKey,
-          )
-          .setOrigin(0, 0);
-        let users = this.add
-          .text(
-            207,
-            206 + i * 34,
-            "0" +
-              "/" +
-              this.roomList.value[i + this.currentPage * 3 - 3]?.maxUsers,
-          )
-          .setOrigin(0, 0);
-        image.on("pointerover", () => {
-          name.setPosition(14, 208 + i * 34);
-          users.setPosition(209, 208 + i * 34);
-        });
-        image.on("pointerout", () => {
-          name.setPosition(12, 206 + i * 34);
-
-          users.setPosition(207, 206 + i * 34);
-        });
-        this.roomButtonsArr.push({
-          button: image,
-          name: name,
-          numUsers: users,
-        });
-        this.roomButtonsGroup.addMultiple([image, name, users]);
-      }
     }
+    for (let i = 0; i < numEntries; i++) {
+      let roomKey = this.roomList.value[i + this.currentPage * 3 - 3]?.roomKey;
+      let formattedRoomKey;
+      if (roomKey.length > 18) {
+        formattedRoomKey = roomKey.slice(0, 16) + " ...";
+      } else {
+        formattedRoomKey = roomKey;
+      }
+      let image = makeHoverable(
+        this.add.image(8, 203 + i * 34, "room-button-select").setOrigin(0, 0),
+      );
+      let name = this.add
+        .bitmapText(12, 207 + i * 34, "ds", formattedRoomKey)
+        .setOrigin(0, 0);
+      let users = this.add
+        .bitmapText(
+          205,
+          208 + i * 34,
+          "ds",
+          this.roomList.value[i + this.currentPage * 3 - 3].currentUsers +
+            "/" +
+            this.roomList.value[i + this.currentPage * 3 - 3].maxUsers,
+        )
+        .setOrigin(0, 0);
+
+      image.on("pointerover", () => {
+        name.setPosition(14, 208 + i * 34);
+        users.setPosition(207, 210 + i * 34);
+      });
+      image.on("pointerdown", () => {
+        if (this.selectedRoom == i) {
+          this.selectedRoom = undefined;
+          name.setText(formattedRoomKey);
+        } else {
+          this.selectedRoom = i;
+          for (let i = 0; i < this.roomButtonsArr.length; i++) {
+            let e = this.roomButtonsArr[i];
+            e.name.setText(e.formattedRoomKey);
+          }
+          name.setText("[ " + formattedRoomKey + " ]");
+        }
+      });
+      image.on("pointerout", () => {
+        name.setPosition(12, 206 + i * 34);
+        users.setPosition(205, 208 + i * 34);
+      });
+      this.roomButtonsArr.push({
+        button: image,
+        name: name,
+        numUsers: users,
+        formattedRoomKey: formattedRoomKey,
+        roomKey: roomKey,
+        index: i,
+      });
+      this.roomButtonsGroup.addMultiple([image, name, users]);
+    }
+
     this.pageNumberTracker.setText(this.currentPage + "/" + this.numPages);
+  }
+  onNewRoomList() {
+    return () => {
+      this.generateRoomButtons();
+    };
   }
   create() {
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.roomButtonsGroup = this.add.group();
     this.roomButtonsArr = [];
+    this.$bus.on("newroomlist", this.onNewRoomList());
 
-    // generate roomButtons based off of roomList
-    this.$bus.on("newroomlist", () => {
-      this.generateRoomButtons();
-    });
     // scrolling minigames logo
     this.add.image(128, 67, "scroll-strip-background");
     this.add.image(0, 150, "dialogue-background1").setOrigin(0, 0);
@@ -138,6 +137,8 @@ export class JoinRoom extends Scene {
       68,
       "minigames-rainbow",
     );
+    this.add.image(144, 170, "dialogue3");
+
     // create buttons
     this.backButton = makeHoverable(this.add.image(232, 360, "back-button"));
     this.confirmButton = makeHoverable(
@@ -154,13 +155,13 @@ export class JoinRoom extends Scene {
       this.add.image(48, 320, "left-arrow-button").setVisible(false),
     );
     this.pageTextBackground = this.add.image(128, 320, "text-input");
-    this.numPagesText = this.add.image(102, 322, "num-pages-text");
-    this.pageNumberTracker = this.add.text(
-      128,
-      312,
+    this.numPagesText = this.add.image(112, 322, "num-pages-text");
+    this.pageNumberTracker = this.add.bitmapText(
+      143,
+      314,
+      "ds",
       this.currentPage + "/" + this.numPages,
     );
-
     //set click callbacks
     this.backButton.on("pointerdown", () => {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
@@ -191,16 +192,27 @@ export class JoinRoom extends Scene {
         }
       }
     });
+    this.confirmButton.on("pointerdown", () => {
+      if (this.selectedRoom != undefined) {
+        this.$bus.emit("joinroom", {
+          roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
+        });
+        this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
+        this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
+        this.scene.start("RoomLobby");
+      }
+    });
     this.syncButton.on("pointerdown", () => {
       this.$bus.emit("refreshrooms");
     });
     // refresh room list
     this.$bus.emit("refreshrooms");
-    //create buttopns
     this.currentPage = 1;
 
+    //generate buttons
     this.generateRoomButtons();
   }
+
   update() {
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
     this.minigamesTitle2.setX(this.minigamesTitle2.x + -0.5);
@@ -210,5 +222,8 @@ export class JoinRoom extends Scene {
     if (this.minigamesTitle1.x < -128) {
       this.minigamesTitle1.setX(380);
     }
+  }
+  onShutdown() {
+    this.$bus.off("newroomlist", this.onNewRoomList());
   }
 }

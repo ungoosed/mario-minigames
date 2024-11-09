@@ -34,10 +34,12 @@ export class Preloader extends Scene {
     //load text-based assets
     this.load.setPath("assets/text");
 
+    this.load.bitmapFont("ds", "/fonts/ds.png", "/fonts/ds.xml");
     this.load.image("dialogue-background1", "dialogue-background1.png");
     this.load.image("group-name", "group-name.png");
     this.load.image("dialogue1", "dialogue1.png");
     this.load.image("dialogue2", "dialogue2.png");
+    this.load.image("dialogue3", "dialogue3.png");
     this.load.image("blank-text-background", "blank-text-background.png");
     this.load.image("num-pages-text", "num-pages-text.png");
 

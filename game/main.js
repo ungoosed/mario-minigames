@@ -3,7 +3,7 @@ import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { CreateRoom } from "./scenes/menu/CreateRoom";
 import { JoinRoom } from "./scenes/menu/JoinRoom";
-import TextEditPlugin from "phaser3-rex-plugins/plugins/textedit-plugin.js";
+import { RoomLobby } from "./scenes/menu/RoomLobby";
 export const createGame = (config = {}) =>
   new Phaser.Game({
     type: Phaser.AUTO,
@@ -29,5 +29,5 @@ export const createGame = (config = {}) =>
         gravity: { y: 900 },
       },
     },
-    scene: [Boot, Preloader, MainMenu, CreateRoom, JoinRoom],
+    scene: [Boot, Preloader, MainMenu, CreateRoom, JoinRoom, RoomLobby],
   });
