@@ -21,6 +21,10 @@ export const createGame = (config = {}) =>
         target: "phaser",
       },
     },
+    scale: {
+      // Fit to window
+      mode: Phaser.Scale.FIT,
+    },
     backgroundColor: "#fdf6e3",
     pixelArt: true,
     physics: {

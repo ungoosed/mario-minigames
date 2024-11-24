@@ -5,14 +5,30 @@
 import makeHoverable from "~/game/utils/makeHoverable";
 import { Scene } from "phaser";
 
-//
 export class RoomLobby extends Scene {
   constructor() {
     super("RoomLobby");
-    this.roomData = useRoomData("roomData");
+    this.gameState = useGameState("gameState");
+    this.userData = useUserData("userData");
     this.$bus = useNuxtApp().$bus;
   }
+  drawUsers() {
+    for (let i = 0; i < this.gameState.value.users.length; i++) {
+      let identifierText = i === 0 ? "Host" : "";
+      this.gameState.value.users[i].id == this.userData.value.id
+        ? (identifierText += "&You:")
+        : (identifierText += ":");
+      this.add.bitmapText(20, 210 + i * 34, "ds", identifierText);
+      this.add.bitmapText(
+        120,
+        210 + i * 34,
+        "ds",
+        this.gameState.value.users[i].name,
+      );
+    }
+  }
   create() {
+    console.log(this.gameState.value);
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(128, 67, "scroll-strip-background");
@@ -41,18 +57,29 @@ export class RoomLobby extends Scene {
     makeHoverable(this.backButton);
     this.backButton.on("pointerdown", () => {
       //return to menu
+      this.$bus.emit("leaveroom");
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("MainMenu");
     });
-    this.$bus.on("newroomdata", () => {
-      console.log("new room data");
-      console.log(this.roomData.value);
-      for (let i = 0; i < this.roomData.value.users.length; i++) {
-        this.add.text(100, 200 + i * 34, this.roomData.value.users[i]);
-      }
+    this.$bus.on("gamestate", () => {
+      console.log(this.gameState.value);
+      this.drawUsers();
     });
+    this.add.image(128, 203, "dialogue-background2").setOrigin(0.5, 0);
+    this.startGameButton = this.add.image(105, 345, "start-game-button");
+    makeHoverable(this.startGameButton);
+    this.dialogue = this.add
+      .bitmapText(
+        30,
+        155,
+        "dense",
+        "Wait for the host\n to start the game . . .",
+      )
+      .setCharacterTint(0, -1, true, 0xffffff);
+    this.drawUsers();
   }
+
   update() {
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
     this.minigamesTitle2.setX(this.minigamesTitle2.x + -0.5);

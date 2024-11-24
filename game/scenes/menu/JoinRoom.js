@@ -9,6 +9,8 @@ export class JoinRoom extends Scene {
     this.numPages = 1;
     this.currentPage = 1;
     this.selectedRoom = undefined;
+    this.startPoll = false;
+    this.gameState = useGameState("gameState");
   }
 
   generateRoomButtons() {
@@ -197,9 +199,6 @@ export class JoinRoom extends Scene {
         this.$bus.emit("joinroom", {
           roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
         });
-        this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
-        this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
-        this.scene.start("RoomLobby");
       }
     });
     this.syncButton.on("pointerdown", () => {
@@ -211,6 +210,11 @@ export class JoinRoom extends Scene {
 
     //generate buttons
     this.generateRoomButtons();
+    this.$bus.on("gamestate", () => {
+      this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
+      this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
+      this.scene.start("RoomLobby");
+    });
   }
 
   update() {

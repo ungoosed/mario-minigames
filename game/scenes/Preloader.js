@@ -35,7 +35,10 @@ export class Preloader extends Scene {
     this.load.setPath("assets/text");
 
     this.load.bitmapFont("ds", "/fonts/ds.png", "/fonts/ds.xml");
+    this.load.bitmapFont("dense", "/fonts/dense.png", "/fonts/dense.xml");
+
     this.load.image("dialogue-background1", "dialogue-background1.png");
+    this.load.image("dialogue-background2", "dialogue-background2.png");
     this.load.image("group-name", "group-name.png");
     this.load.image("dialogue1", "dialogue1.png");
     this.load.image("dialogue2", "dialogue2.png");
@@ -61,6 +64,10 @@ export class Preloader extends Scene {
     });
     this.load.spritesheet("join-button", "join-button.png", {
       frameWidth: 243,
+      frameHeight: 59,
+    });
+    this.load.spritesheet("start-game-button", "start-game-button.png", {
+      frameWidth: 195,
       frameHeight: 59,
     });
     this.load.spritesheet("room-button-select", "room-button-select.png", {

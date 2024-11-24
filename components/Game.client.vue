@@ -3,30 +3,31 @@ import PhaserGame from "nuxtjs-phaser/phaserGame.vue";
 const { status, data, send, open } = useWebSocket(
     `ws://${location.host}/api/minigames`,
 );
-const uuid = ref("");
 const { $bus } = useNuxtApp();
 
 const roomList = useRoomList("roomList");
-const roomData = useRoomData("roomData");
-roomData.value = {
-    roomKey: undefined,
-    users: [],
-};
+const gameState = useGameState("gameState");
+const userData = useUserData("userData");
+
 // websocket stuff
 watch(data, (message) => {
     let parsed = JSON.parse(message);
     if (parsed.type == "uuid") {
-        uuid.value = parsed.content;
-        console.log(uuid.value);
+        userData.value.uuid = parsed.content[0];
+        userData.value.id = parsed.content[1];
+        console.log("uuid");
+        console.log(userData.value.uuid);
+        console.log("id");
+        console.log(userData.value.id);
     }
     if (parsed.type == "data") {
         if (parsed.content.type == "roomList") {
             roomList.value = parsed.content.data;
             $bus.emit("newroomlist");
         }
-        if (parsed.content.type == "roomData") {
-            Object.assign(roomData.value, parsed.content.data);
-            $bus.emit("newroomdata");
+        if (parsed.content.type == "gameState") {
+            Object.assign(gameState.value, parsed.content.data);
+            $bus.emit("gamestate");
         }
     }
 });
@@ -62,7 +63,7 @@ function createRoom(args) {
     send(
         JSON.stringify({
             type: "createroom",
-            uuid: uuid.value,
+            uuid: userData.value.uuid,
             content: { roomKey: args.roomKey, maxUsers: args.maxUsers },
         }),
     );
@@ -74,8 +75,17 @@ function joinRoom(args) {
     send(
         JSON.stringify({
             type: "join",
-            uuid: uuid.value,
+            uuid: userData.value.uuid,
+            id: userData.value.id,
             content: { roomKey: args.roomKey, name: "reindeer bufere!" },
+        }),
+    );
+}
+function leaveRoom() {
+    send(
+        JSON.stringify({
+            type: "leave",
+            uuid: userData.value.uuid,
         }),
     );
 }
@@ -83,10 +93,13 @@ function joinRoom(args) {
 $bus.on("createroom", createRoom);
 $bus.on("refreshrooms", refreshRooms);
 $bus.on("joinroom", joinRoom);
+$bus.on("leaveroom", leaveRoom);
+
 onUnmounted(async () => {
     $bus.off("createroom", createRoom);
     $bus.off("refreshrooms", refreshRooms);
     $bus.off("joinroom", joinRoom);
+    $bus.off("leaveroom", leaveRoom);
 });
 </script>
 
