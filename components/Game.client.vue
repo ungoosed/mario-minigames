@@ -30,6 +30,9 @@ watch(data, (message) => {
             $bus.emit("gamestate");
         }
     }
+    if (parsed.type == "action") {
+        $bus.emit("action", parsed.id, parsed.data);
+    }
 });
 
 // phaser stuff

@@ -1,19 +1,6 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
 import { useNuxtApp } from "#app";
-function onGameState(scene) {
-  return function () {
-    scene.registry.set("minigamesTitle1", scene.minigamesTitle1.x);
-    scene.registry.set("minigamesTitle2", scene.minigamesTitle2.x);
-    scene.scene.start("RoomLobby");
-    scene.$bus.off("gamestate", scene.onGameState);
-  };
-}
-function onNewRoomList(scene) {
-  return function () {
-    scene.generateRoomButtons();
-  };
-}
 export class JoinRoom extends Scene {
   constructor() {
     super("JoinRoom");
@@ -219,10 +206,21 @@ export class JoinRoom extends Scene {
     //generate buttons
     this.generateRoomButtons();
 
-    this.onGameState = onGameState(this);
-    this.onNewRoomList = onNewRoomList(this);
-    this.$bus.on("gamestate", this.onGameState);
-    this.$bus.on("newroomlist", this.onNewRoomList);
+    let onNewRoomList = function () {
+      this.generateRoomButtons();
+    }.bind(this);
+
+    let onGameState = function () {
+      this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
+      this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
+      this.scene.start("RoomLobby");
+    }.bind(this);
+    this.$bus.on("gamestate", onGameState);
+    this.$bus.on("newroomlist", onNewRoomList);
+    this.events.on("shutdown", () => {
+      this.$bus.off("gamestate", onGameState);
+      this.$bus.off("newroomlist", onNewRoomList);
+    });
   }
   update() {
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
@@ -233,8 +231,5 @@ export class JoinRoom extends Scene {
     if (this.minigamesTitle1.x < -128) {
       this.minigamesTitle1.setX(380);
     }
-  }
-  onShutdown() {
-    this.$bus.off("newroomlist", this.onNewRoomList);
   }
 }

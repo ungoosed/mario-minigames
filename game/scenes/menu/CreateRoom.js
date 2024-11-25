@@ -7,11 +7,9 @@ export class CreateRoom extends Scene {
   constructor() {
     super("CreateRoom");
     this.$bus = useNuxtApp().$bus;
+    this.gameState = useGameState("gameState");
   }
-  createEventListeners() {}
-  unloadEventListeners() {}
   create() {
-    this.createEventListeners();
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(128, 67, "scroll-strip-background");
@@ -119,8 +117,12 @@ export class CreateRoom extends Scene {
         roomKey: roomNameInput.text,
         maxUsers: numPeople,
       });
+      //request join room for room you created as the host
+
+      this.$bus.emit("joinroom", {
+        roomKey: roomNameInput.text,
+      });
       roomNameInput.setText("");
-      //join room you created as the host
     });
 
     let numPeople = 2;
@@ -148,6 +150,15 @@ export class CreateRoom extends Scene {
       }
       this.numPeopleNumbers.setFrame(numPeople - 1);
     });
+    let onGameState = function () {
+      this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
+      this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
+      this.scene.start("RoomLobby");
+    }.bind(this);
+    this.$bus.on("gamestate", onGameState);
+    this.events.on("shutdown", () => {
+      this.$bus.off("gamestate", onGameState);
+    });
   }
   update() {
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
@@ -158,8 +169,5 @@ export class CreateRoom extends Scene {
     if (this.minigamesTitle1.x < -128) {
       this.minigamesTitle1.setX(380);
     }
-  }
-  onShutdown() {
-    this.unloadEventListeners();
   }
 }

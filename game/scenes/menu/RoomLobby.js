@@ -34,7 +34,6 @@ export class RoomLobby extends Scene {
     }
   }
   create() {
-    console.log(this.gameState.value);
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(128, 67, "scroll-strip-background");
@@ -69,13 +68,14 @@ export class RoomLobby extends Scene {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
     });
-    this.$bus.on("gamestate", () => {
-      console.log(this.gameState.value);
-      this.drawUsers();
-    });
+
     this.add.image(128, 203, "dialogue-background2").setOrigin(0.5, 0);
     this.startGameButton = this.add.image(105, 345, "start-game-button");
     makeHoverable(this.startGameButton);
+    if (this.gameState.value.users[0].id != this.userData.value.id) {
+      this.startGameButton.setFrame(1).disableInteractive();
+    }
+
     this.dialogue = this.add
       .bitmapText(
         30,
@@ -85,8 +85,18 @@ export class RoomLobby extends Scene {
       )
       .setCharacterTint(0, -1, true, 0xffffff);
     this.drawUsers();
+    let onGameState = function () {
+      console.log(this.gameState.value);
+      if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.startGameButton.setInteractive();
+      }
+      this.drawUsers();
+    }.bind(this);
+    this.$bus.on("gamestate", onGameState);
+    this.events.on("shutdown", () => {
+      this.$bus.off("gamestate", onGameState);
+    });
   }
-
   update() {
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
     this.minigamesTitle2.setX(this.minigamesTitle2.x + -0.5);
