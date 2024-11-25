@@ -22,7 +22,6 @@ function getGameState(roomKey) {
     publicUserList.push({
       name: usr.name,
       id: usr.id,
-      isHost: usr.isHost,
       points: usr.points,
     });
   });
@@ -55,6 +54,7 @@ export default defineWebSocketHandler({
     );
     if (userData) {
       rooms[userData.roomKey].users.splice(userData.index, 1);
+      broadcastGameState(userData.roomKey, peer);
     }
   },
   error(peer, error) {
@@ -111,7 +111,6 @@ export default defineWebSocketHandler({
             uuid: meta.uuid,
             id: meta.id,
             name: content.name,
-            isHost: target.users.length == 0,
             points: 0,
           });
           peer.subscribe(content.roomKey);
@@ -127,6 +126,7 @@ export default defineWebSocketHandler({
       if (userData) {
         peer.unsubscribe(userData.roomKey);
         rooms[userData.roomKey].users.splice(userData.index, 1);
+        broadcastGameState(userData.roomKey, peer);
       }
     }
   },

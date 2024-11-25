@@ -11,20 +11,26 @@ export class RoomLobby extends Scene {
     this.gameState = useGameState("gameState");
     this.userData = useUserData("userData");
     this.$bus = useNuxtApp().$bus;
+    this.userListItems = [];
   }
   drawUsers() {
+    this.userListItems.forEach((item) => {
+      item.destroy();
+    });
+    this.userListItems.length = 0;
     for (let i = 0; i < this.gameState.value.users.length; i++) {
       let identifierText = i === 0 ? "Host" : "";
       this.gameState.value.users[i].id == this.userData.value.id
         ? (identifierText += "&You:")
         : (identifierText += ":");
-      this.add.bitmapText(20, 210 + i * 34, "ds", identifierText);
-      this.add.bitmapText(
+      let tag = this.add.bitmapText(20, 210 + i * 34, "ds", identifierText);
+      let name = this.add.bitmapText(
         120,
         210 + i * 34,
         "ds",
         this.gameState.value.users[i].name,
       );
+      this.userListItems.push(tag, name);
     }
   }
   create() {
@@ -56,11 +62,12 @@ export class RoomLobby extends Scene {
     this.backButton = this.add.image(232, 360, "back-button");
     makeHoverable(this.backButton);
     this.backButton.on("pointerdown", () => {
+      this.scene.start("MainMenu");
+
       //return to menu
       this.$bus.emit("leaveroom");
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
-      this.scene.start("MainMenu");
     });
     this.$bus.on("gamestate", () => {
       console.log(this.gameState.value);

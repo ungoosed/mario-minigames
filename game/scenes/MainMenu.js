@@ -41,11 +41,13 @@ export class MainMenu extends Scene {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("CreateRoom");
+      this.scene.stop();
     });
     this.joinButton.on("pointerdown", () => {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("JoinRoom");
+      this.scene.stop();
     });
   }
   update() {

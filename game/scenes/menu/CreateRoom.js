@@ -109,6 +109,7 @@ export class CreateRoom extends Scene {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("MainMenu");
+      this.scene.stop();
     });
     this.confirmButton.on("pointerdown", () => {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);

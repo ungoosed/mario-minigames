@@ -1,6 +1,19 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
 import { useNuxtApp } from "#app";
+function onGameState(scene) {
+  return function () {
+    scene.registry.set("minigamesTitle1", scene.minigamesTitle1.x);
+    scene.registry.set("minigamesTitle2", scene.minigamesTitle2.x);
+    scene.scene.start("RoomLobby");
+    scene.$bus.off("gamestate", scene.onGameState);
+  };
+}
+function onNewRoomList(scene) {
+  return function () {
+    scene.generateRoomButtons();
+  };
+}
 export class JoinRoom extends Scene {
   constructor() {
     super("JoinRoom");
@@ -105,17 +118,11 @@ export class JoinRoom extends Scene {
 
     this.pageNumberTracker.setText(this.currentPage + "/" + this.numPages);
   }
-  onNewRoomList() {
-    return () => {
-      this.generateRoomButtons();
-    };
-  }
   create() {
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.roomButtonsGroup = this.add.group();
     this.roomButtonsArr = [];
-    this.$bus.on("newroomlist", this.onNewRoomList());
 
     // scrolling minigames logo
     this.add.image(128, 67, "scroll-strip-background");
@@ -169,6 +176,7 @@ export class JoinRoom extends Scene {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("MainMenu");
+      this.scene.stop();
     });
     this.increasePageButton.on("pointerdown", () => {
       if (this.currentPage < this.numPages) {
@@ -210,13 +218,12 @@ export class JoinRoom extends Scene {
 
     //generate buttons
     this.generateRoomButtons();
-    this.$bus.on("gamestate", () => {
-      this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
-      this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
-      this.scene.start("RoomLobby");
-    });
-  }
 
+    this.onGameState = onGameState(this);
+    this.onNewRoomList = onNewRoomList(this);
+    this.$bus.on("gamestate", this.onGameState);
+    this.$bus.on("newroomlist", this.onNewRoomList);
+  }
   update() {
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
     this.minigamesTitle2.setX(this.minigamesTitle2.x + -0.5);
@@ -228,6 +235,6 @@ export class JoinRoom extends Scene {
     }
   }
   onShutdown() {
-    this.$bus.off("newroomlist", this.onNewRoomList());
+    this.$bus.off("newroomlist", this.onNewRoomList);
   }
 }

@@ -13,6 +13,9 @@ export const createGame = (config = {}) =>
     dom: {
       createContainer: true,
     },
+    scale: {
+      mode: Phaser.Scale.FIT,
+    },
     input: {
       mouse: {
         target: "phaser",
