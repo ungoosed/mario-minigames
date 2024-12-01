@@ -30,7 +30,19 @@ export class Preloader extends Scene {
     this.load.image("number-input", "number-input.png");
     this.load.image("minigames-rainbow", "minigames-rainbow.png");
     this.load.image("scroll-strip-background", "scroll-strip-background.png");
-
+    this.load.setPath("assets/thumbnails");
+    this.load.spritesheet("thumbnail-frame", "thumbnail-frame.png", {
+      frameWidth: 52,
+      frameHeight: 52,
+    });
+    this.load.spritesheet("bob-omb-blast-thumbnail", "bob-omb-blast.png", {
+      frameWidth: 48,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("picture-poker-thumbnail", "picture-poker.png", {
+      frameWidth: 48,
+      frameHeight: 48,
+    });
     //load text-based assets
     this.load.setPath("assets/text");
 
@@ -86,6 +98,10 @@ export class Preloader extends Scene {
         frameHeight: 59,
       },
     );
+    this.load.spritesheet("continue-button", "continue-button.png", {
+      frameWidth: 147,
+      frameHeight: 35,
+    });
     this.load.spritesheet("join-button-confirm", "join-button-confirm.png", {
       frameWidth: 147,
       frameHeight: 35,
@@ -98,9 +114,29 @@ export class Preloader extends Scene {
       frameWidth: 23,
       frameHeight: 27,
     });
+    this.load.spritesheet("back-button", "back-button.png", {
+      frameWidth: 35,
+      frameHeight: 31,
+    });
+    this.load.spritesheet("action-games-button", "action-games-button.png", {
+      frameWidth: 80,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("puzzle-games-button", "puzzle-games-button.png", {
+      frameWidth: 80,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("table-games-button", "table-games-button.png", {
+      frameWidth: 80,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("variety-games-button", "variety-games-button.png", {
+      frameWidth: 80,
+      frameHeight: 48,
+    });
   }
 
   create() {
-    this.scene.start("MainMenu");
+    this.scene.start("SetProfile");
   }
 }

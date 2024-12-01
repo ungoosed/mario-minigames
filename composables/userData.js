@@ -1,4 +1,4 @@
 export const useUserData = () =>
   useState("userData", () => {
-    return { uuid: "", id: "" };
+    return { uuid: "", id: "", name: "" };
   });

@@ -45,14 +45,6 @@ function setPhaserFocus() {
     const phaser = document.getElementById("phaser");
     if (phaser) phaser.focus();
 }
-function emitPhaserEvent(eventName) {
-    if (window.$phaser?.eventEmitter) {
-        window.$phaser.eventEmitter.emit(eventName, "default");
-    }
-}
-function setData(key, data) {
-    window.$phaser?.game.registry.set(key, data);
-}
 
 // Lifecycle hook
 onMounted(async () => {
@@ -80,7 +72,7 @@ function joinRoom(args) {
             type: "join",
             uuid: userData.value.uuid,
             id: userData.value.id,
-            content: { roomKey: args.roomKey, name: "reindeer bufere!" },
+            content: { roomKey: args.roomKey, name: userData.value.name },
         }),
     );
 }
@@ -92,17 +84,46 @@ function leaveRoom() {
         }),
     );
 }
+function update(args) {
+    send(
+        JSON.stringify({
+            type: "update",
+            uuid: userData.value.uuid,
+            content: {
+                roomKey: gameState.value.roomKey,
+                data: args,
+            },
+        }),
+    );
+}
+function action(args) {
+    send(
+        JSON.stringify({
+            type: "action",
+            uuid: userData.value.uuid,
+            id: userData.value.id,
+            content: {
+                roomKey: gameState.roomKey,
+                data: args,
+            },
+        }),
+    );
+}
 // Receive events from phaser
 $bus.on("createroom", createRoom);
 $bus.on("refreshrooms", refreshRooms);
 $bus.on("joinroom", joinRoom);
 $bus.on("leaveroom", leaveRoom);
+$bus.on("update", update);
+$bus.on("action", action);
 
 onUnmounted(async () => {
     $bus.off("createroom", createRoom);
     $bus.off("refreshrooms", refreshRooms);
     $bus.off("joinroom", joinRoom);
     $bus.off("leaveroom", leaveRoom);
+    $bus.off("update", update);
+    $bus.off("action", action);
 });
 </script>
 

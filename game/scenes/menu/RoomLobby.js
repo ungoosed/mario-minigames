@@ -69,28 +69,42 @@ export class RoomLobby extends Scene {
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
     });
 
-    this.add.image(128, 203, "dialogue-background2").setOrigin(0.5, 0);
     this.startGameButton = this.add.image(105, 345, "start-game-button");
     makeHoverable(this.startGameButton);
-    if (this.gameState.value.users[0].id != this.userData.value.id) {
+    if (
+      this.gameState.value.users[0]?.id != this.userData.value.id ||
+      this.gameState.value.users.length == 1
+    ) {
       this.startGameButton.setFrame(1).disableInteractive();
     }
-
+    this.startGameButton.on("pointerdown", () => {
+      if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.$bus.emit("update", { game: "SelectGame" });
+      }
+    });
     this.dialogue = this.add
       .bitmapText(
         30,
         155,
         "dense",
-        "Wait for the host\n to start the game . . .",
+        this.gameState.value.users.length > 1
+          ? "Wait for the host\n to start the game . . ."
+          : "Wait for players to join . . ",
       )
       .setCharacterTint(0, -1, true, 0xffffff);
     this.drawUsers();
     let onGameState = function () {
-      console.log(this.gameState.value);
-      if (this.gameState.value.users[0].id == this.userData.value.id) {
+      if (
+        this.gameState.value.users[0]?.id == this.userData.value.id ||
+        this.gameState.value.users.length == 1
+      ) {
         this.startGameButton.setInteractive();
+        this.startGameButton.setFrame(0);
       }
       this.drawUsers();
+      if (this.gameState.value.data.game == "SelectGame") {
+        this.scene.start("SelectGame");
+      }
     }.bind(this);
     this.$bus.on("gamestate", onGameState);
     this.events.on("shutdown", () => {

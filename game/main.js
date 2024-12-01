@@ -4,6 +4,8 @@ import { Preloader } from "./scenes/Preloader";
 import { CreateRoom } from "./scenes/menu/CreateRoom";
 import { JoinRoom } from "./scenes/menu/JoinRoom";
 import { RoomLobby } from "./scenes/menu/RoomLobby";
+import { SelectGame } from "./scenes/menu/SelectGame";
+import { SetProfile } from "./scenes/menu/SetProfile";
 export const createGame = (config = {}) =>
   new Phaser.Game({
     type: Phaser.AUTO,
@@ -36,5 +38,14 @@ export const createGame = (config = {}) =>
         gravity: { y: 900 },
       },
     },
-    scene: [Boot, Preloader, MainMenu, CreateRoom, JoinRoom, RoomLobby],
+    scene: [
+      Boot,
+      Preloader,
+      MainMenu,
+      CreateRoom,
+      JoinRoom,
+      RoomLobby,
+      SetProfile,
+      SelectGame,
+    ],
   });

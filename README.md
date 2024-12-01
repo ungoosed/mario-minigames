@@ -1,75 +1,21 @@
-# Nuxt 3 Minimal Starter
+## game data example
+{
+    "roomKey": "hello",
+    "users": [
+        {
+            "name": "reindeer",
+            "id": "ae9cde93-c579-4e45-89bd-c8d6af421ad8",
+            "points": 0
+        }
+    ],
+    "game": {}
+}
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
-
-## Setup
-
-Make sure to install the dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## server side data example
+{ maxUsers: 2,
+  users:
+   [ { uuid: '7db3ab10-6e1d-4397-9b37-9fb9031bc83c',
+       id: 'fc071aed-06d7-4eac-bba6-067b5c88abec',
+       name: 'hi',
+       points: 0 } ],
+  data: { room: 'SelectGame' } }

@@ -32,14 +32,15 @@ function getGameState(roomKey) {
       data: {
         roomKey: roomKey,
         users: publicUserList,
-        game: rooms[roomKey].data,
+        data: rooms[roomKey].data,
       },
     },
   };
 }
 function broadcastGameState(roomKey, peer) {
-  peer.publish(roomKey, JSON.stringify(getGameState(roomKey)));
-  peer.send(JSON.stringify(getGameState(roomKey)));
+  let gs = getGameState(roomKey);
+  peer.publish(roomKey, JSON.stringify(gs));
+  peer.send(JSON.stringify(gs));
 }
 function forwardAction(roomKey, id, action) {
   let host = users[rooms[roomKey]?.users[0]?.uuid];
@@ -58,7 +59,11 @@ export default defineWebSocketHandler({
     );
     if (userData) {
       rooms[userData.roomKey].users.splice(userData.index, 1);
+      peer.unsubscribe(userData.roomKey);
       broadcastGameState(userData.roomKey, peer);
+      if (rooms[userData.roomKey].users.length <= 0) {
+        delete rooms[userData.roomKey];
+      }
     }
   },
   error(peer, error) {
@@ -108,7 +113,7 @@ export default defineWebSocketHandler({
     }
     if (meta.type == "join") {
       // params: type, id, uuid, content: {roomKey, name}
-      if (!findUser(meta.uuid)) {
+      if (!findUser(meta.uuid) && rooms[content.roomKey]) {
         let target = rooms[content.roomKey];
         if (target.users.length < target.maxUsers) {
           target.users.push({
@@ -131,11 +136,17 @@ export default defineWebSocketHandler({
         peer.unsubscribe(userData.roomKey);
         rooms[userData.roomKey].users.splice(userData.index, 1);
         broadcastGameState(userData.roomKey, peer);
+        if (rooms[userData.roomKey].users.length <= 0) {
+          delete rooms[userData.roomKey];
+        }
       }
     }
     if (meta.type == "update") {
       // params: type, uuid, content: {roomKey, data}
-      if (meta.uuid == rooms[contentroomKey].users[0].uuid) {
+      if (
+        meta.uuid == rooms[content.roomKey]?.users[0].uuid &&
+        findUser(meta.uuid)
+      ) {
         rooms[content.roomKey].data = content.data;
         broadcastGameState(content.roomKey, peer);
       }
