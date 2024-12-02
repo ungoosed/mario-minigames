@@ -79,7 +79,11 @@ export class RoomLobby extends Scene {
     }
     this.startGameButton.on("pointerdown", () => {
       if (this.gameState.value.users[0].id == this.userData.value.id) {
-        this.$bus.emit("update", { game: "SelectGame" });
+        this.$bus.emit("update", {
+          game: "SelectGame",
+          turn: this.gameState.value.users[0].id,
+          category: "action",
+        });
       }
     });
     this.dialogue = this.add

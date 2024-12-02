@@ -11,48 +11,130 @@ export class SelectGame extends Scene {
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(0, 150, "dialogue-background1").setOrigin(0, 0);
-    for (let i = 0; i < this.gameState.value.users.length; i++) {
+    for (let i = 0; i < this.gameState.value.users?.length; i++) {
       this.add
         .bitmapText(
           128,
           30 + i * 15,
           "dense",
-          "name: " + this.gameState.value.users[i].name,
+          "name: " + this.gameState.value.users[i]?.name,
         )
         .setOrigin(0.5, 0);
     }
-    let actionGames = ["picture-poker", "bob-omb-blast"];
-    for (let i = 0; i < actionGames.length; i++) {
-      let thumb = this.add
-        .image(87, 202 + 57 * i, actionGames[i] + "-thumbnail")
-        .setOrigin(0, 0);
-      let frame = this.add
-        .image(85, 200 + 57 * i, "thumbnail-frame")
-        .setOrigin(0, 0);
-      thumb.setInteractive().on("pointerover", () => {
-        thumb.setTint("0xfffa05");
-      });
-      thumb.setInteractive().on("pointerout", () => {
-        thumb.clearTint();
+    const categories = ["action", "puzzle", "table", "variety"];
+
+    const actionGames = ["picture-poker", "bob-omb-blast"];
+    const puzzleGames = [];
+    const tableGames = [];
+    const varietyGames = [];
+    let allGames = [actionGames, puzzleGames, tableGames, varietyGames];
+    let gamesButtons = [];
+    //create thumbnails
+    for (let j = 0; j < 4; j++) {
+      let e = [];
+      for (let i = 0; i < allGames[j].length; i++) {
+        // draw thumbnail of game
+        let thumb = this.add
+          .image(87, 202 + 57 * i, allGames[j][i] + "-thumbnail")
+          .setOrigin(0, 0);
+        //draw frame of thumbnail
+        let frame = this.add
+          .image(85, 200 + 57 * i, "thumbnail-frame")
+          .setOrigin(0, 0);
+        thumb.setInteractive();
+        thumb.on("pointerover", () => {
+          thumb.setTint("0xfffa05");
+        });
+        thumb.on("pointerout", () => {
+          thumb.clearTint();
+        });
+        thumb.on("pointerdown", () => {
+          // this.$bus.emit("action");
+        });
+        e.push(thumb, frame);
+      }
+      gamesButtons.push(e);
+    }
+
+    let updateThumbnails = function () {
+      for (let i = 0; i < gamesButtons.length; i++) {
+        let interactable;
+        if (this.userData.value.id == this.gameState.value.data?.turn) {
+          interactable = true;
+        } else {
+          interactable = false;
+        }
+        for (let j = 0; j < gamesButtons[i].length; j++) {
+          gamesButtons[i][j].setVisible(
+            categories[i] == this.gameState.value.data?.category,
+          );
+          console.log(interactable);
+          //idk what is going on why are some inverted HELP MEEEEEEE
+          if (!interactable) {
+            gamesButtons[i][j].setInteractive();
+          }
+        }
+      }
+    }.bind(this);
+    //draw game category buttons
+    let categoryButtons = [];
+    //create category buttons
+    for (let i = 0; i < categories.length; i++) {
+      let button = this.add
+        .image(0, 144 + 48 * (i + 1), categories[i] + "-games-button")
+        .setOrigin(0, 0)
+        .setFrame(1);
+      makeHoverable(button);
+      categoryButtons.push(button);
+      button.on("pointerdown", () => {
+        if (this.gameState.value.users[0]?.id == this.userData.value.id) {
+          this.gameState.value.data.category = categories[i];
+          this.$bus.emit("update", this.gameState.value.data);
+        } else {
+          this.$bus.emit("action", {
+            type: "setcategory",
+            category: categories[i],
+          });
+        }
       });
     }
-    this.actionButton = this.add
-      .image(0, 144 + 48, "action-games-button")
-      .setOrigin(0, 0)
-      .setFrame(1);
-    this.puzzleButton = this.add
-      .image(0, 144 + 48 * 2, "puzzle-games-button")
-      .setOrigin(0, 0);
-    this.tableButton = this.add
-      .image(0, 144 + 48 * 3, "table-games-button")
-      .setOrigin(0, 0);
-    this.varietyButton = this.add
-      .image(0, 144 + 48 * 4, "variety-games-button")
-      .setOrigin(0, 0);
-    makeHoverable(this.actionButton);
-    makeHoverable(this.puzzleButton);
-    makeHoverable(this.tableButton);
-    makeHoverable(this.varietyButton);
+    //sets buttons to interative depending on
+    // if they are already selected
+    // or they are not the host
+    let updateCategories = function () {
+      for (let i = 0; i < categoryButtons.length; i++) {
+        if (this.gameState.value.data?.category == categories[i]) {
+          categoryButtons[i].setFrame(1).disableInteractive();
+        } else {
+          categoryButtons[i].setFrame(0).setInteractive();
+        }
+        if (this.gameState.value.data?.turn != this.userData.value.id) {
+          categoryButtons[i].disableInteractive();
+        }
+      }
+    }.bind(this);
+    //run updates
+    updateCategories();
+    updateThumbnails();
+
+    let onTry = function (args) {
+      console.log("hi");
+      if (args.data.type == "setcategory") {
+        this.gameState.value.data.category = args.data.category;
+        this.$bus.emit("update", this.gameState.value.data);
+      }
+    }.bind(this);
+    let onGameState = function () {
+      updateCategories();
+      updateThumbnails();
+    };
+    this.$bus.on("gamestate", onGameState);
+    this.$bus.on("try", onTry);
+
+    this.events.on("shutdown", () => {
+      this.$bus.off("gamestate", onGameState);
+      this.$bus.off("try", onTry);
+    });
   }
   update() {}
 }

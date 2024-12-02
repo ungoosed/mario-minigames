@@ -43,8 +43,8 @@ function broadcastGameState(roomKey, peer) {
   peer.send(JSON.stringify(gs));
 }
 function forwardAction(roomKey, id, action) {
-  let host = users[rooms[roomKey]?.users[0]?.uuid];
-  host.send(JSON.stringify({ type: "action", id: id, data: action }));
+  let host = users[rooms[roomKey].users[0].uuid];
+  host.send(JSON.stringify({ type: "try", id: id, data: action }));
 }
 export default defineWebSocketHandler({
   open(peer) {
@@ -153,7 +153,7 @@ export default defineWebSocketHandler({
     }
     if (meta.type == "action") {
       // params: type, uuid, id, content: {roomKey, data}
-      if (meta.id == findUser(meta.uuid).id) {
+      if (meta.id == findUser(meta.uuid).user.id) {
         forwardAction(content.roomKey, meta.id, content.data);
       }
     }

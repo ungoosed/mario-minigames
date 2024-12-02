@@ -30,8 +30,9 @@ watch(data, (message) => {
             $bus.emit("gamestate");
         }
     }
-    if (parsed.type == "action") {
-        $bus.emit("action", parsed.id, parsed.data);
+    if (parsed.type == "try") {
+        console.log("hi");
+        $bus.emit("try", { id: parsed.id, data: parsed.data });
     }
 });
 
@@ -103,7 +104,7 @@ function action(args) {
             uuid: userData.value.uuid,
             id: userData.value.id,
             content: {
-                roomKey: gameState.roomKey,
+                roomKey: gameState.value.roomKey,
                 data: args,
             },
         }),
