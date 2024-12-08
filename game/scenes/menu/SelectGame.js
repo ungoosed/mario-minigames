@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+const minigames = import.meta.glob("~/game/scenes/minigames/*.js");
 import makeHoverable from "~/game/utils/makeHoverable";
 export class SelectGame extends Scene {
   constructor() {
@@ -49,7 +50,13 @@ export class SelectGame extends Scene {
           thumb.clearTint();
         });
         thumb.on("pointerdown", () => {
-          // this.$bus.emit("action");
+          if (this.gameState.value.users[0].id == this.userData.value.id) {
+            this.gameState.value.data.game = allGames[j][i];
+
+            this.$bus.emit("update", this.gameState.value.data);
+          } else {
+            this.$bus.emit("action", { type: "setgame", game: allGames[j][i] });
+          }
         });
         e.push(thumb, frame);
       }
@@ -68,7 +75,6 @@ export class SelectGame extends Scene {
           gamesButtons[i][j].setVisible(
             categories[i] == this.gameState.value.data?.category,
           );
-          console.log(interactable);
           //idk what is going on why are some inverted HELP MEEEEEEE
           if (!interactable) {
             gamesButtons[i][j].setInteractive();
@@ -118,16 +124,38 @@ export class SelectGame extends Scene {
     updateThumbnails();
 
     let onTry = function (args) {
-      console.log("hi");
-      if (args.data.type == "setcategory") {
-        this.gameState.value.data.category = args.data.category;
+      if (
+        args?.data?.type == "setcategory" &&
+        args?.id == this.gameState.value.data?.turn &&
+        allGames.find((c) => {
+          return c.indexOf(args?.data?.category) != -1;
+        })
+      ) {
+        this.gameState.value.data.category = args.data?.category;
+        this.$bus.emit("update", this.gameState.value.data);
+      }
+      if (
+        args.data.type == "setgame" &&
+        args.id == this.gameState.value.data?.turn
+      ) {
+        this.gameState.value.data.game = args.data?.game;
         this.$bus.emit("update", this.gameState.value.data);
       }
     }.bind(this);
     let onGameState = function () {
       updateCategories();
       updateThumbnails();
-    };
+      if (this.gameState.value.data.game != "SelectGame") {
+        minigames[
+          `/game/scenes/minigames/${this.gameState.value.data.game
+            .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+            .replace(/^./, (match) => match.toUpperCase())}.js`
+        ]().then((module) => {
+          this.scene.add(this.gameState.value.data?.game, module.default);
+          this.scene.start(this.gameState.value.data?.game);
+        });
+      }
+    }.bind(this);
     this.$bus.on("gamestate", onGameState);
     this.$bus.on("try", onTry);
 

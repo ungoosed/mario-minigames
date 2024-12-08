@@ -31,7 +31,6 @@ watch(data, (message) => {
         }
     }
     if (parsed.type == "try") {
-        console.log("hi");
         $bus.emit("try", { id: parsed.id, data: parsed.data });
     }
 });

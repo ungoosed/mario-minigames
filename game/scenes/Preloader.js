@@ -27,6 +27,8 @@ export class Preloader extends Scene {
 
     this.load.image("menu-background", "menu-background.png");
     this.load.image("text-input", "text-input.png");
+    this.load.image("title-background", "title-background.png");
+
     this.load.image("number-input", "number-input.png");
     this.load.image("minigames-rainbow", "minigames-rainbow.png");
     this.load.image("scroll-strip-background", "scroll-strip-background.png");
@@ -51,6 +53,7 @@ export class Preloader extends Scene {
 
     this.load.image("dialogue-background1", "dialogue-background1.png");
     this.load.image("dialogue-background2", "dialogue-background2.png");
+    this.load.image("dialogue-background3", "dialogue-background3.png");
     this.load.image("group-name", "group-name.png");
     this.load.image("dialogue1", "dialogue1.png");
     this.load.image("dialogue2", "dialogue2.png");
@@ -77,6 +80,10 @@ export class Preloader extends Scene {
     this.load.spritesheet("join-button", "join-button.png", {
       frameWidth: 243,
       frameHeight: 59,
+    });
+    this.load.spritesheet("start-button", "start-button.png", {
+      frameWidth: 195,
+      frameHeight: 43,
     });
     this.load.spritesheet("start-game-button", "start-game-button.png", {
       frameWidth: 195,
