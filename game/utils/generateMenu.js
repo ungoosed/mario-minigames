@@ -21,6 +21,8 @@ export default function generateMenu(scene, config, onStart) {
   );
   const obj = { inputs: [] };
   const labels = [];
+  const rights = [];
+  const lefts = [];
   const interactive = scene.add.group();
   for (let i = 0; i < config.inputs.length; i++) {
     if (config.inputs[i].type == "picker") {
@@ -29,9 +31,10 @@ export default function generateMenu(scene, config, onStart) {
         .image(49, 230 + i * 30, "left-arrow-button")
         .setVisible(false);
       makeHoverable(left);
+      lefts.push(left);
       let right = scene.add.image(205, 230 + i * 30, "right-arrow-button");
       makeHoverable(right);
-
+      rights.push(right);
       obj["inputs"][i] = 0;
       let label = scene.add
         .bitmapText(128, 230 + i * 30, "ds")
@@ -66,6 +69,16 @@ export default function generateMenu(scene, config, onStart) {
   }
   obj.set = (inputIndex, labelIndex) => {
     labels[inputIndex].setText(config.inputs[inputIndex].labels[labelIndex]);
+    if (labelIndex == 0) {
+      lefts[inputIndex].setVisible(false);
+      rights[inputIndex].setVisible(true);
+    } else if (labelIndex >= config.inputs[inputIndex].labels.length - 1) {
+      lefts[inputIndex].setVisible(true);
+      rights[inputIndex].setVisible(false);
+    } else {
+      lefts[inputIndex].setVisible(true);
+      rights[inputIndex].setVisible(true);
+    }
   };
 
   let start = makeHoverable(

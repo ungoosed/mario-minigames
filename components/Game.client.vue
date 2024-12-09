@@ -96,6 +96,19 @@ function update(args) {
         }),
     );
 }
+function targetUpdate(args) {
+    send(
+        JSON.stringify({
+            type: "update",
+            uuid: userData.value.uuid,
+            content: {
+                roomKey: gameState.value.roomKey,
+                data: args.data,
+                target: args.target,
+            },
+        }),
+    );
+}
 function action(args) {
     send(
         JSON.stringify({
@@ -115,6 +128,7 @@ $bus.on("refreshrooms", refreshRooms);
 $bus.on("joinroom", joinRoom);
 $bus.on("leaveroom", leaveRoom);
 $bus.on("update", update);
+$bus.on("targetupdate", targetUpdate);
 $bus.on("action", action);
 
 onUnmounted(async () => {
@@ -122,6 +136,7 @@ onUnmounted(async () => {
     $bus.off("refreshrooms", refreshRooms);
     $bus.off("joinroom", joinRoom);
     $bus.off("leaveroom", leaveRoom);
+    $bus.off("targetupdate", targetUpdate);
     $bus.off("update", update);
     $bus.off("action", action);
 });
