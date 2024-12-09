@@ -17,49 +17,49 @@ export default class PicturePoker extends Scene {
           url: "assets/minigames/table/back-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
         "cloud-card": {
           url: "assets/minigames/table/cloud-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
         "mushroom-card": {
           url: "assets/minigames/table/mushroom-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
         "flower-card": {
           url: "assets/minigames/table/flower-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
         "luigi-card": {
           url: "assets/minigames/table/luigi-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
         "mario-card": {
           url: "assets/minigames/table/mario-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
         "star-card": {
           url: "assets/minigames/table/star-card.png",
           config: {
             frameWidth: 32,
-            frameHeight: 38,
+            frameHeight: 48,
           },
         },
       },
