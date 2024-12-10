@@ -19,6 +19,7 @@ export default function generateMenu(scene, config, onStart) {
     ],
     {},
   );
+
   const obj = { inputs: [] };
   const labels = [];
   const rights = [];
@@ -106,7 +107,8 @@ export default function generateMenu(scene, config, onStart) {
     interactive.setVisible(true);
     menu.setVisible(true);
   };
-
+  interactive.setDepth(3);
+  menu.setDepth(2);
   //returns {
   // setVisible()  let obj = { menu: menu };
 

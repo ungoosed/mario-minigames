@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import generateHand from "~/game/utils/generateHand";
 import generateMenu from "~/game/utils/generateMenu";
+import indexOfUser from "~/game/utils/indexOfUser";
 import loadAssets from "~/game/utils/loadAssets";
 export default class PicturePoker extends Scene {
   constructor() {
@@ -12,58 +13,47 @@ export default class PicturePoker extends Scene {
       images: {
         "casino-background": "assets/minigames/table/casino-background.png",
       },
-      spritesheets: {
-        "back-card": {
-          url: "assets/minigames/table/back-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-        "cloud-card": {
-          url: "assets/minigames/table/cloud-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-        "mushroom-card": {
-          url: "assets/minigames/table/mushroom-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-        "flower-card": {
-          url: "assets/minigames/table/flower-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-        "luigi-card": {
-          url: "assets/minigames/table/luigi-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-        "mario-card": {
-          url: "assets/minigames/table/mario-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-        "star-card": {
-          url: "assets/minigames/table/star-card.png",
-          config: {
-            frameWidth: 32,
-            frameHeight: 48,
-          },
-        },
-      },
+      spritesheets: {},
     };
+    this.cardTypes = [
+      "back",
+      "cloud",
+      "mushroom",
+      "flower",
+      "luigi",
+      "mario",
+      "star",
+    ];
+    for (let i = 0; i < this.cardTypes.length; i++) {
+      this.assets.spritesheets[this.cardTypes[i] + "-card"] = {
+        url: "assets/minigames/table/" + this.cardTypes[i] + "-card.png",
+        config: {
+          frameWidth: 32,
+          frameHeight: 48,
+        },
+      };
+      if (this.cardTypes[i] != "back") {
+        if (this.cardTypes[i] == "star") {
+          this.assets.spritesheets[this.cardTypes[i] + "-indicator"] = {
+            url:
+              "assets/minigames/table/" + this.cardTypes[i] + "-indicator.png",
+            config: {
+              frameWidth: 20,
+              frameHeight: 17,
+            },
+          };
+        } else {
+          this.assets.spritesheets[this.cardTypes[i] + "-indicator"] = {
+            url:
+              "assets/minigames/table/" + this.cardTypes[i] + "-indicator.png",
+            config: {
+              frameWidth: 20,
+              frameHeight: 16,
+            },
+          };
+        }
+      }
+    }
   }
   create() {
     this.handleMenu();
@@ -72,25 +62,134 @@ export default class PicturePoker extends Scene {
     this.cards = [];
     this.load.once("complete", () => {
       this.$bus.emit("action", { type: "ready" });
-      this.add.image(0, 0, "casino-background").setOrigin(0, 0).setDepth(-1);
-      this.add.image(0, 192, "casino-background").setOrigin(0, 0).setDepth(-1);
+      this.add
+        .image(128, 96, "casino-background")
+        .setOrigin(0.5, 0.5)
+
+        .setRotation(Math.PI);
+      this.add.image(0, 192, "casino-background").setOrigin(0, 0);
+      this.p2coins = this.add
+        .bitmapText(15, 192, "ds", "30")
+        .setOrigin(0, 0)
+        .setTint(0xffff00);
+      this.createGlobalAnims();
     });
     let onGameState = function () {
       console.log(this.gameState.value);
       if (this.gameState.value.data.round > 0) {
         for (let i = 0; i < this.gameState.value.data.users.length; i++) {
-          for (let k = 0; k < 5; k++) {
-            let key = Object.keys(this.assets.spritesheets)[
-              this.gameState.value.data.users[i].hand[k]
-            ];
-            this.add.sprite(20 + k * 30, 100 + i * 70, key);
+          if (this.gameState.value.users[i].id == this.userData.value.id) {
+            this.drawCards(50, 310, this.gameState.value.data.users[i].hand);
+          } else {
+            this.drawCards(20, 30 + i * 50, [0, 0, 0, 0, 0]);
           }
         }
       }
     }.bind(this);
-    let onTry = function () {}.bind(this);
+    let onTry = function (args) {
+      if (args.id == this.gameState.value.data.turn) {
+        if (args.data.type == "select") {
+          let userIndex = this.gameState.value.data.users.findIndex((usr) => {
+            usr.id == args.id;
+          });
+          this.gameState.value.data.users[userIndex].selected[args.data.card] =
+            true;
+        }
+        if (args.data.type == "deselect") {
+          let userIndex = this.gameState.value.data.users.findIndex((usr) => {
+            usr.id == args.id;
+          });
+          this.gameState.value.data.users[userIndex].selected[args.data.card] =
+            false;
+        }
+      }
+    }.bind(this);
     this.$bus.on("try", onTry);
     this.$bus.on("gamestate", onGameState);
+  }
+  drawCards(x, y, cards) {
+    let cardObjects = [];
+    for (let i = 0; i < cards.length; i++) {
+      let interactiveCard = this.add.sprite(
+        x + i * 40,
+        y,
+        Object.keys(this.assets.spritesheets)[cards[i]],
+      );
+      if (!(cards[i] == 0)) {
+        // animations
+        interactiveCard.play("begin-turn");
+        interactiveCard.chain("finish-turn-" + this.cardTypes[cards[i]]);
+        interactiveCard
+          .setInteractive()
+          .setData("type", this.cardTypes[cards[i]])
+          .setData("selected", false);
+        interactiveCard.on("pointerdown", () => {
+          if (interactiveCard.getData("selected")) {
+            interactiveCard.setData("selected", false);
+            this.tweens.add({
+              targets: interactiveCard, // The sprite to move
+              x: x + i * 40, // The destination x-coordinate
+              y: y, // The destination y-coordinate
+              ease: "Power1", // Easing function
+              duration: 200, // Duration in milliseconds
+            });
+            this.$bus.emit("action", { type: "select", card: i });
+          } else {
+            interactiveCard.setData("selected", true);
+            this.tweens.add({
+              targets: interactiveCard, // The sprite to move
+              x: x + i * 40, // The destination x-coordinate
+              y: y - 20, // The destination y-coordinate
+              ease: "Power1", // Easing function
+              duration: 200, // Duration in milliseconds
+            });
+            this.$bus.emit("action", { type: "deselect", card: i });
+          }
+        });
+      } else {
+        interactiveCard.setFrame(0);
+      }
+      cardObjects.push(interactiveCard);
+    }
+    return cardObjects;
+  }
+  createGlobalAnims() {
+    this.anims.create({
+      key: "begin-turn",
+      frames: [
+        {
+          key: "back-card",
+          frame: 0,
+        },
+        {
+          key: "back-card",
+          frame: 1,
+        },
+        {
+          key: "back-card",
+          frame: 2,
+        },
+      ],
+      // time
+      frameRate: 12,
+    });
+    for (let i = 1; i < this.cardTypes.length; i++) {
+      this.anims.create({
+        key: "finish-turn-" + this.cardTypes[i],
+        frames: [
+          {
+            key: this.cardTypes[i] + "-card",
+            frame: 0,
+          },
+          {
+            key: this.cardTypes[i] + "-card",
+            frame: 1,
+          },
+        ],
+        // time
+        frameRate: 12,
+      });
+    }
   }
   handleMenu() {
     // generate menu object
@@ -193,8 +292,9 @@ export default class PicturePoker extends Scene {
     for (let i = 0; i < this.gameState.value.users.length; i++) {
       this.gameState.value.data.users.push({
         id: this.gameState.value.users[i].id,
-        coins: 0,
+        coins: 30,
         hand: [],
+        selected: [false, false, false, false, false],
       });
     }
   }
@@ -207,26 +307,8 @@ export default class PicturePoker extends Scene {
       if (
         !(this.gameState.value.users[i].id == this.gameState.value.users[0].id)
       ) {
-        let strippedCards = [];
-        for (let k = 0; k < this.gameState.value.users.length; k++) {
-          if (k == i) {
-            strippedCards.push({
-              id: this.gameState.value.users[i].id,
-              coins: 0,
-              hand: hand,
-            });
-          } else {
-            strippedCards.push({
-              id: this.gameState.value.users[i].id,
-              coins: 0,
-              hand: [0, 0, 0, 0, 0],
-            });
-          }
-        }
-        let strippedCopy = structuredClone(toRaw(this.gameState.value.data));
-        strippedCopy.users = strippedCards;
         this.$bus.emit("targetupdate", {
-          data: strippedCopy,
+          data: this.strippedGameState(this.gameState.value.users[i].id),
           target: this.gameState.value.users[i].id,
         });
       }
@@ -235,5 +317,29 @@ export default class PicturePoker extends Scene {
       data: this.gameState.value.data,
       target: this.userData.value.id,
     });
+  }
+  strippedGameState(user, hand) {
+    let i = indexOfUser(user);
+    console.log(user);
+    console.log(i);
+    let strippedCards = [];
+    for (let k = 0; k < this.gameState.value.users.length; k++) {
+      if (k == i) {
+        strippedCards.push({
+          id: this.gameState.value.users[i].id,
+          coins: 0,
+          hand: this.gameState.value.data.users[i].hand,
+        });
+      } else {
+        strippedCards.push({
+          id: this.gameState.value.users[i].id,
+          coins: 0,
+          hand: [0, 0, 0, 0, 0],
+        });
+      }
+    }
+    let strippedCopy = structuredClone(toRaw(this.gameState.value.data));
+    strippedCopy.users = strippedCards;
+    return strippedCopy;
   }
 }
