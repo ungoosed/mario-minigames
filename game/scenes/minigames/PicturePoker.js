@@ -119,13 +119,30 @@ export default class PicturePoker extends Scene {
               );
             } else {
               //update own hand
+              let oldHand = [];
+              console.log(this.hands[i]);
+              for (let k = 0; k < 5; k++) {
+                oldHand.push(
+                  this.cardTypes.indexOf(
+                    this.hands[i].objects[k].getData("type"),
+                  ),
+                );
+              }
+              if (
+                JSON.stringify(oldHand) !=
+                JSON.stringify(this.gameState.value.data.users[i].hand)
+              )
+                this.hands[i].replace(
+                  oldHand,
+                  this.gameState.value.data.users[i].hand,
+                );
             }
           } else {
             if (!this.hands[i]) {
               console.log("draw");
               this.hands[i] = this.drawCards(20, 30 + i * 50, [0, 0, 0, 0, 0]);
             } else {
-              this.hands[i].reveal(this.gameState.value.data.users[i].hand);
+              // this.hands[i].reveal(this.gameState.value.data.users[i].hand);
             }
           }
           if (this.gameState.value.data.users[i].selected && this.hands[i]) {
@@ -282,6 +299,39 @@ export default class PicturePoker extends Scene {
           if (hand[i] != -1) {
             cardObjects[i].anims.play("begin-turn");
             cardObjects[i].chain("finish-turn-" + this.cardTypes[hand[i]]);
+          }
+        }
+      },
+      replace: (hand, newHand) => {
+        for (let i = 0; i < hand.length; i++) {
+          if (hand[i] != newHand[i]) {
+            cardObjects[i].anims.playReverse(
+              "finish-turn-" + this.cardTypes[hand[i]],
+            );
+            cardObjects[i].anims.chain("begin-turn");
+            cardObjects[i].anims.reverse(true);
+            this.tweens.add({
+              targets: cardObjects[i], // The sprite to move
+              x: x + i * 40, // The destination x-coordinate
+              y: 192, // The destination y-coordinate
+              ease: "Linear", // Easing function
+              duration: 400, // Duration in milliseconds
+              onComplete: () => {
+                cardObjects[i].anims.play("begin-turn-");
+                cardObjects[i].setPosition(128, 192);
+                cardObjects[i].anims.chain(
+                  "finish-turn-" + this.cardTypes[newHand[i]],
+                );
+                this.tweens.add({
+                  targets: cardObjects[i], // The sprite to move
+                  x: x + i * 40, // The destination x-coordinate
+                  y: y, // The destination y-coordinate
+                  ease: "Linear", // Easing function
+                  duration: 400, // Duration in milliseconds
+                });
+              },
+            });
+            cardObjects[i].setData("type", this.cardTypes[newHand[i]]);
           }
         }
       },
@@ -445,9 +495,9 @@ export default class PicturePoker extends Scene {
     let strippedCopy = structuredClone(toRaw(this.gameState.value.data));
     for (let k = 0; k < this.gameState.value.users.length; k++) {
       if (k == i) {
-        strippedCopy.users[i].hand = this.gameState.value.data.users[i].hand;
+        strippedCopy.users[i].hand = this.gameState.value.data.users[k].hand;
       } else {
-        strippedCopy.users[i].hand = [0, 0, 0, 0, 0];
+        strippedCopy.users[k].hand = [0, 0, 0, 0, 0];
       }
     }
     return strippedCopy;
