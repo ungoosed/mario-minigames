@@ -3,6 +3,7 @@ import generateHand from "~/game/utils/generateHand";
 import generateMenu from "~/game/utils/generateMenu";
 import indexOfUser from "~/game/utils/indexOfUser";
 import loadAssets from "~/game/utils/loadAssets";
+import makeHoverable from "~/game/utils/makeHoverable";
 export default class PicturePoker extends Scene {
   constructor() {
     super("picture-poker");
@@ -21,6 +22,13 @@ export default class PicturePoker extends Scene {
           config: {
             frameWidth: 110,
             frameHeight: 15,
+          },
+        },
+        "hold-draw-button": {
+          url: "assets/minigames/table/hold-draw-button.png",
+          config: {
+            frameWidth: 144,
+            frameHeight: 32,
           },
         },
       },
@@ -80,20 +88,33 @@ export default class PicturePoker extends Scene {
         .setDepth(-1);
       this.add.image(0, 192, "casino-background").setOrigin(0, 0).setDepth(-1);
       this.p2coins = this.add
-        .bitmapText(15, 192, "ds", "30")
+        .bitmapText(15, 200, "ds", "30")
         .setOrigin(0, 0)
         .setTint(0xffff00);
+      this.add.image(15, 200, "coin");
+      this.drawButton = this.add
+        .image(128, 230, "hold-draw-button")
+        .setInteractive();
+      this.turnStatus = this.add.bitmapText(128, 220, "ds");
+      this.drawButton.on("pointerdown", () => {
+        this.$bus.emit("action", {
+          type: "draw",
+        });
+      });
+      this.drawIndicators();
       this.createGlobalAnims();
     });
     let onGameState = function () {
       console.log(this.gameState.value);
       if (this.gameState.value.data.round > 0) {
+        //when game has started
+        //loop over each user
         for (let i = 0; i < this.gameState.value.data.users.length; i++) {
           if (this.gameState.value.users[i].id == this.userData.value.id) {
             if (!this.hands[i]) {
               this.hands[i] = this.drawCards(
-                50,
-                310,
+                67,
+                345,
                 this.gameState.value.data.users[i].hand,
               );
             } else {
@@ -104,7 +125,7 @@ export default class PicturePoker extends Scene {
               console.log("draw");
               this.hands[i] = this.drawCards(20, 30 + i * 50, [0, 0, 0, 0, 0]);
             } else {
-              //update other person hand
+              this.hands[i].reveal(this.gameState.value.data.users[i].hand);
             }
           }
           if (this.gameState.value.data.users[i].selected && this.hands[i]) {
@@ -112,6 +133,28 @@ export default class PicturePoker extends Scene {
               this.gameState.value.data.users[i].selected,
             );
           }
+          if (this.gameState.value.data.turn == this.userData.value.id) {
+            this.drawButton.setVisible(true);
+            this.turnStatus.setText("It's your turn.");
+          } else {
+            this.drawButton.setVisible(false);
+            this.turnStatus.setText(
+              "It's " +
+                this.gameState.value.users[
+                  indexOfUser(this.gameState.value.data.turn)
+                ].name +
+                "'s turn.",
+            );
+          }
+        }
+        if (
+          this.gameState.value.data?.users[
+            indexOfUser(this.userData.value.id)
+          ]?.selected?.includes(true)
+        ) {
+          this.drawButton.setFrame(1);
+        } else {
+          this.drawButton.setFrame(0);
         }
       }
     }.bind(this);
@@ -133,6 +176,34 @@ export default class PicturePoker extends Scene {
             false;
           this.broadcastStrippedGameState();
         }
+        if (args.data.type == "draw") {
+          let userIndex = indexOfUser(args.id);
+          for (
+            let i = 0;
+            i < this.gameState.value.data.users[userIndex].selected.length;
+            i++
+          ) {
+            if (this.gameState.value.data.users[userIndex].selected[i]) {
+              this.gameState.value.data.users[userIndex].hand[i] =
+                Math.floor(Math.random() * 6) + 1;
+            }
+          }
+          this.gameState.value.data.users[userIndex].selected = [
+            false,
+            false,
+            false,
+            false,
+            false,
+          ];
+          let nextTurn =
+            this.gameState.value.users[indexOfUser(args.id) + 1]?.id;
+          if (nextTurn) {
+            this.gameState.value.data.turn = nextTurn;
+          } else {
+            this.gameState.value.data.turn = this.gameState.value.users[0].id;
+          }
+          this.broadcastStrippedGameState();
+        }
       }
     }.bind(this);
     this.$bus.on("try", onTry);
@@ -152,6 +223,7 @@ export default class PicturePoker extends Scene {
         interactiveCard.chain("finish-turn-" + this.cardTypes[cards[i]]);
         interactiveCard
           .setInteractive()
+          .setFrame(1)
           .setData("type", this.cardTypes[cards[i]])
           .setData("selected", false);
         this.tweens.add({
@@ -162,26 +234,28 @@ export default class PicturePoker extends Scene {
           duration: 200, // Duration in milliseconds
         });
         interactiveCard.on("pointerdown", () => {
-          if (interactiveCard.getData("selected")) {
-            interactiveCard.setData("selected", false);
-            this.tweens.add({
-              targets: interactiveCard, // The sprite to move
-              x: x + i * 40, // The destination x-coordinate
-              y: y, // The destination y-coordinate
-              ease: "Power1", // Easing function
-              duration: 200, // Duration in milliseconds
-            });
-            this.$bus.emit("action", { type: "deselect", card: i });
-          } else {
-            interactiveCard.setData("selected", true);
-            this.tweens.add({
-              targets: interactiveCard, // The sprite to move
-              x: x + i * 40, // The destination x-coordinate
-              y: y - 20, // The destination y-coordinate
-              ease: "Power1", // Easing function
-              duration: 200, // Duration in milliseconds
-            });
-            this.$bus.emit("action", { type: "select", card: i });
+          if (this.gameState.value.data.turn == this.userData.value.id) {
+            if (interactiveCard.getData("selected")) {
+              interactiveCard.setData("selected", false);
+              this.tweens.add({
+                targets: interactiveCard, // The sprite to move
+                x: x + i * 40, // The destination x-coordinate
+                y: y, // The destination y-coordinate
+                ease: "Power1", // Easing function
+                duration: 200, // Duration in milliseconds
+              });
+              this.$bus.emit("action", { type: "deselect", card: i });
+            } else {
+              interactiveCard.setData("selected", true);
+              this.tweens.add({
+                targets: interactiveCard, // The sprite to move
+                x: x + i * 40, // The destination x-coordinate
+                y: y - 20, // The destination y-coordinate
+                ease: "Power1", // Easing function
+                duration: 200, // Duration in milliseconds
+              });
+              this.$bus.emit("action", { type: "select", card: i });
+            }
           }
         });
       } else {
@@ -201,6 +275,14 @@ export default class PicturePoker extends Scene {
             ease: "Power1", // Easing function
             duration: 200, // Duration in milliseconds
           });
+        }
+      },
+      reveal: (hand) => {
+        for (let i = 0; i < hand.length; i++) {
+          if (hand[i] != -1) {
+            cardObjects[i].anims.play("begin-turn");
+            cardObjects[i].chain("finish-turn-" + this.cardTypes[hand[i]]);
+          }
         }
       },
     };
@@ -388,5 +470,44 @@ export default class PicturePoker extends Scene {
       data: this.gameState.value.data,
       target: this.userData.value.id,
     });
+  }
+  drawIndicators() {
+    let indicators = [];
+    let flash = (index) => {
+      indicators[index].play("flash");
+    };
+    for (let i = 1; i < 7; i++) {
+      let indicator = this.add
+        .sprite(
+          10,
+          365 - i * 16 + (i == 6 ? 1 : 0),
+          this.cardTypes[i] + "-indicator",
+        )
+        .setOrigin(0, 0);
+      indicators.push(indicator);
+      indicator.anims.create({
+        key: "flash",
+        frames: [
+          {
+            key: this.cardTypes[i] + "-indicator",
+            frame: 1,
+          },
+          {
+            key: this.cardTypes[i] + "-indicator",
+            frame: 0,
+          },
+        ],
+        repeat: 6,
+        frameRate: 8,
+      });
+      indicator.setInteractive();
+      indicator.on("pointerdown", () => {
+        flash(i - 1);
+      });
+    }
+    return {
+      objects: indicators,
+      flash: flash,
+    };
   }
 }
