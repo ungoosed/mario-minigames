@@ -73,7 +73,6 @@ export default class PicturePoker extends Scene {
         }
       }
     }
-    console.log(this.assets);
   }
   create() {
     this.handleMenu();
@@ -133,19 +132,29 @@ export default class PicturePoker extends Scene {
       this.drawIndicators();
       this.createGlobalAnims();
     });
+    let maskGraphic = this.make.graphics();
+    maskGraphic.fillRect(0, 192, 256, 192);
+    maskGraphic.fillStyle(0xffffff);
+    this.upperScreenMask = maskGraphic.createGeometryMask();
+
     let onGameState = function () {
       if (this.gameState.value.data.round > 0) {
         //when game has started
         //loop over each user
         let opponentCount = 0;
         for (let i = 0; i < this.gameState.value.data.users.length; i++) {
-          if (
-            this.gameState.value.data.users[i].coins !=
-            this.coins[i].object.text
-          ) {
-            this.coins[i].object.text =
-              this.gameState.value.data.users[i].coins;
-          }
+          let buffer = () => {
+            setTimeout(() => {
+              this.coins[i].object.text = Number(this.coins[i].object.text) + 1;
+              if (
+                this.gameState.value.data.users[i].coins !=
+                this.coins[i].object.text
+              ) {
+                buffer();
+              }
+            }, 50);
+          };
+
           if (this.gameState.value.users[i].id == this.userData.value.id) {
             if (!this.hands[i]) {
               this.hands[i] = this.drawCards(
@@ -284,7 +293,7 @@ export default class PicturePoker extends Scene {
         this.cardTypes[cards[i]] + "-card",
       );
       if (onBottom) {
-        // interactiveCard.setMask(this.upperScreenMask);
+        interactiveCard.setMask(this.upperScreenMask);
       }
       if (!(cards[i] == 0)) {
         // animations
@@ -368,11 +377,11 @@ export default class PicturePoker extends Scene {
               this.tweens.add({
                 targets: cardObjects[i], // The sprite to move
                 x: x + i * (noMargin ? 32 : 40), // The destination x-coordinate
-                y: 192, // The destination y-coordinate
+                y: y - 200, // The destination y-coordinate
                 ease: "Linear", // Easing function
                 duration: 400, // Duration in milliseconds
                 onComplete: () => {
-                  cardObjects[i].setPosition(128, 192);
+                  cardObjects[i].setPosition(128, y - 200);
                   cardObjects[i].setTexture("back-card", 0);
                   setTimeout(() => {
                     this.tweens.add({
