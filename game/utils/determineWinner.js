@@ -17,6 +17,7 @@ export default function determineWinner(handsArr) {
       switch (cardCount[i]) {
         default:
           junk.push(i);
+          break;
         case 2:
           if (highest.type == 3) {
             highest.sorted.fill(i, 3, 5);
@@ -35,6 +36,7 @@ export default function determineWinner(handsArr) {
             highest.suit = i;
             highest.sorted.fill(i, 0, 2);
           }
+          break;
         case 3:
           if (highest.type == 1) {
             highest.type = 4;
@@ -46,14 +48,17 @@ export default function determineWinner(handsArr) {
           }
           highest.suit = i;
           highest.sorted.fill(i, 0, 3);
+          break;
         case 4:
           highest.type = 5;
           highest.suit = i;
           highest.sorted.fill(i, 0, 4);
+          break;
         case 5:
           highest.type = 6;
           highest.suit = i;
           highest.sorted.fill(i, 0, 5);
+          break;
       }
     }
     for (let i = 0; i < junk.length; i++) {

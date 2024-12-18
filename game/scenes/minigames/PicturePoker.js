@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import determineWinner from "~/game/utils/determineWinner";
 import generateHand from "~/game/utils/generateHand";
 import generateMenu from "~/game/utils/generateMenu";
 import indexOfUser from "~/game/utils/indexOfUser";
@@ -73,6 +74,7 @@ export default class PicturePoker extends Scene {
         }
       }
     }
+    this.round = 0;
   }
   create() {
     this.handleMenu();
@@ -141,6 +143,11 @@ export default class PicturePoker extends Scene {
       if (this.gameState.value.data.round > 0) {
         //when game has started
         //loop over each user
+        if (this.round != this.gameState.value.data.round) {
+          //play round ending and turn deciding anims
+          this.round = this.gameState.value.data.round;
+          console.log("hi");
+        }
         let opponentCount = 0;
         for (let i = 0; i < this.gameState.value.data.users.length; i++) {
           let buffer = () => {
@@ -232,14 +239,10 @@ export default class PicturePoker extends Scene {
       }
     }.bind(this);
     let onTry = function (args) {
-      console.log(args);
       // only update when it is their turn
       if (args.id == this.gameState.value.data.turn) {
         let userIndex = indexOfUser(args.id);
         if (args.data.type == "select") {
-          console.log("sending");
-          console.log(userIndex);
-
           this.gameState.value.data.users[userIndex].selected[args.data.card] =
             true;
           this.broadcastStrippedGameState();
@@ -265,15 +268,74 @@ export default class PicturePoker extends Scene {
             false,
             false,
           ];
-          this.gameState.value.data.users[userIndex].coins += 100;
-          let nextTurn =
-            this.gameState.value.users[indexOfUser(args.id) + 1]?.id;
-          if (nextTurn) {
-            this.gameState.value.data.turn = nextTurn;
+          let drawCards = this.gameState.value.data.users.map((e) => {
+            if (e.drawn.length > 0) {
+              return e.drawn;
+            }
+          });
+          if (drawCards.length == this.gameState.value.users.length) {
+            if (
+              this.gameState.value.data.numRounds ==
+              this.gameState.value.data.round
+            ) {
+              //game end logic
+            } else {
+              let hands = this.gameState.value.data.users.map((e) => {
+                return e.hand;
+              });
+              this.gameState.value.data.round++;
+              this.gameState.value.data.winners = determineWinner(hands);
+              for (let user = 0; user < this.gameState.value.users; i++) {
+                let numCoins = 0;
+                switch (this.gameState.value.data.winners.type) {
+                  case 1:
+                    numCoins = 2;
+                    break;
+                  case 2:
+                    numCoins = 3;
+                    break;
+                  case 3:
+                    numCoins = 4;
+                    break;
+                  case 4:
+                    numCoins = 8;
+                    break;
+                  case 5:
+                    numCoins = 10;
+                    break;
+                  case 6:
+                    numCoins = 16;
+                    break;
+                }
+                if (this.gameState.value.data.winners.winners.includes(user)) {
+                  this.gameState.value.data.users[user].coins += numCoins;
+                } else {
+                  this.gameState.value.data.users[user].coins -= numCoins;
+                }
+              }
+              let nextTurn =
+                this.gameState.value.users[indexOfUser(args.id) + 1]?.id;
+              if (nextTurn) {
+                this.gameState.value.data.turn = nextTurn;
+              } else {
+                this.gameState.value.data.turn =
+                  this.gameState.value.users[0].id;
+              }
+              this.broadcastStrippedGameState();
+              for (let user of this.gameState.value.data.users) {
+                user.drawn = [];
+              }
+            }
           } else {
-            this.gameState.value.data.turn = this.gameState.value.users[0].id;
+            let nextTurn =
+              this.gameState.value.users[indexOfUser(args.id) + 1]?.id;
+            if (nextTurn) {
+              this.gameState.value.data.turn = nextTurn;
+            } else {
+              this.gameState.value.data.turn = this.gameState.value.users[0].id;
+            }
+            this.broadcastStrippedGameState();
           }
-          this.broadcastStrippedGameState();
           for (let i = 0; i < this.gameState.value.users.length; i++) {
             this.gameState.value.data.users[i].drawn = [];
           }
@@ -284,7 +346,6 @@ export default class PicturePoker extends Scene {
     this.$bus.on("gamestate", onGameState);
   }
   drawCards(x, y, cards, noMargin, onBottom) {
-    console.log("drawCards");
     let cardObjects = [];
     for (let i = 0; i < cards.length; i++) {
       let interactiveCard = this.add.sprite(
@@ -344,7 +405,6 @@ export default class PicturePoker extends Scene {
     return {
       objects: cardObjects,
       setSelected: (hand) => {
-        console.log("SetSelected");
         for (let i = 0; i < hand.length; i++) {
           cardObjects[i].setData("selected", hand[i]);
           this.tweens.add({
@@ -355,6 +415,7 @@ export default class PicturePoker extends Scene {
             duration: 200, // Duration in milliseconds
           });
         }
+        200;
       },
       reveal: (hand) => {
         for (let i = 0; i < hand.length; i++) {
@@ -400,7 +461,8 @@ export default class PicturePoker extends Scene {
                   }, delay);
                 },
               });
-            }, 200);
+              200;
+            }, 167);
 
             cardObjects[i].setData("type", this.cardTypes[newHand[i]]);
             cardsAnimated++;
@@ -545,6 +607,8 @@ export default class PicturePoker extends Scene {
       this.gameState.value.data.numRounds = 0;
     }
     this.gameState.value.data.users = [];
+    this.gameState.value.data.winners = {};
+
     for (let i = 0; i < this.gameState.value.users.length; i++) {
       this.gameState.value.data.users.push({
         id: this.gameState.value.users[i].id,
@@ -581,8 +645,6 @@ export default class PicturePoker extends Scene {
       let strippedState = this.strippedGameState(
         this.gameState.value.users[i].id,
       );
-      console.log(strippedState);
-      console.log(this.gameState.value.users[i].id);
       this.$bus.emit("targetupdate", {
         data: strippedState,
         target: this.gameState.value.users[i].id,
