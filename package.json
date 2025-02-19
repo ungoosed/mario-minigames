@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "mario-minigames",
   "private": true,
   "type": "module",
   "scripts": {
@@ -20,9 +20,7 @@
     "phaser3-rex-plugins": "^1.80.9",
     "uuid": "^10.0.0",
     "vue": "latest",
-    "vue-router": "latest"
-  },
-  "devDependencies": {
+    "vue-router": "latest",
     "nuxtjs-phaser": "^3.0.17"
   },
   "overrides": {

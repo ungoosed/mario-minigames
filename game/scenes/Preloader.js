@@ -46,8 +46,8 @@ export class Preloader extends Scene {
       frameHeight: 48,
     });
     //load text-based assets
-    this.load.setPath("assets/text");
-
+    this.load.setPath("/assets/text");
+    console.log("about to load");
     this.load.bitmapFont("ds", "/fonts/ds.png", "/fonts/ds.xml");
     this.load.bitmapFont("dense", "/fonts/dense.png", "/fonts/dense.xml");
 

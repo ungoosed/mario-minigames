@@ -14,6 +14,7 @@ export default function determineWinner(handsArr) {
       cardCount[card]++;
     });
     for (let i = 0; i < cardCount.length; i++) {
+      if (cardCount[i] === 0) continue;
       switch (cardCount[i]) {
         default:
           junk.push(i);
@@ -33,6 +34,7 @@ export default function determineWinner(handsArr) {
               highest.sorted.fill(i, 2, 4);
             }
           } else {
+            highest.type = 1;
             highest.suit = i;
             highest.sorted.fill(i, 0, 2);
           }

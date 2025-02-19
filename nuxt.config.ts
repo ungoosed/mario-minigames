@@ -6,8 +6,8 @@ export default defineNuxtConfig({
     experimental: {
       websocket: true,
     },
+    preset: "node-server",
   },
-
   modules: ["@vueuse/nuxt"],
   plugins: [
     { src: "node_modules/nuxtjs-phaser", mode: "client" },

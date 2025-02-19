@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import determineWinner from "~/game/utils/determineWinner";
+import determineWinner from "~/game/utils/picture-poker/determineWinner";
 import generateHand from "~/game/utils/generateHand";
 import generateMenu from "~/game/utils/generateMenu";
 import indexOfUser from "~/game/utils/indexOfUser";
@@ -77,34 +77,69 @@ export default class PicturePoker extends Scene {
     this.round = 0;
   }
   create() {
+    //show menu, load assets while in menu
     this.handleMenu();
     loadAssets(this, this.assets);
     this.load.start();
     this.cards = [];
+
+    //create game objects
     this.load.once("complete", () => {
+      //finished loading
+      //allow game to start
       this.$bus.emit("action", { type: "ready" });
+      //draw static assets (background)
       this.add
         .image(128, 96, "casino-background")
         .setOrigin(0.5, 0.5)
         .setRotation(Math.PI)
         .setDepth(-1);
       this.add.image(0, 192, "casino-background").setOrigin(0, 0).setDepth(-1);
+      //background mask for cards
+      let maskGraphic = this.make.graphics();
+      maskGraphic.fillRect(0, 192, 256, 192);
+      maskGraphic.fillStyle(0xffffff);
+      this.upperScreenMask = maskGraphic.createGeometryMask();
+
+      //draw semi-static assets (player names, player pfps*, round label, indicators, turn label)
+      //turn label
+      this.turnStatus = this.add.bitmapText(128, 280, "ds").setOrigin(0.5, 0.5);
+      this.roundLabel = this.add.bitmapText(128, 280, "ds").setOrigin(0.5, 0.5);
+      //turn indicators
+      this.drawIndicators();
+      //player names
+      this.playerNames = [];
+      for (let i = 0, j = 0; i < this.gameState.value.users.length; i++) {
+        let y = 170 - j * 32;
+        if (this.gameState.value.users[i].id == this.userData.value.id) {
+          y = 210;
+        } else {
+          j++;
+        }
+        let text = this.add.image(
+          15,
+          y,
+          "ds",
+          this.gameState.value.users[i].name,
+        );
+        this.playerNames.push(text);
+      }
+      //draw interactive / dynamic assets (drawButton, coins, cards)
       let numOpps = 0;
+      //coins
+      this.coins = [];
       for (let i = 0; i < this.gameState.value.users.length; i++) {
         let y =
           this.gameState.value.users[i].id == this.userData.value.id
-            ? 200
-            : 180 - numOpps++ * 40;
-
+            ? 220
+            : 140 - numOpps++ * 40;
         let text = this.add
-          .bitmapText(15, y, "ds", "30")
+          .bitmapText(20, y, "ds", "30")
           .setOrigin(0, 0)
           .setTint(0xffff00);
-        let coin = this.add.image(15, 200, "coin");
-        this.coins.push({ object: text });
+        let coin = this.add.image(4, y, "coin").setOrigin(0, 0);
+        this.coins.push({ object: text, icon: coin });
       }
-
-      this.turnStatus = this.add.bitmapText(128, 280, "ds").setOrigin(0.5, 0.5);
       //draw button
       this.drawButton = this.add
         .image(128, 230, "hold-draw-button")
@@ -131,111 +166,122 @@ export default class PicturePoker extends Scene {
           selected: selectedCards,
         });
       });
-      this.drawIndicators();
+      //draw cards
+      this.hands = [];
+      this.drawCards(67, 300, [0, 0, 0, 0, 0], false, true);
+
+      // for (let i = 0, j = 0; i < this.gameState.value.users.length; i++) {
+      //   if (this.gameState.value.users[i].id == this.userData.value.id) {
+      //     this.hands.push(
+      //       this.drawCards(67, 300, [0, 0, 0, 0, 0], false, true),
+      //     );
+      //   } else {
+      //     this.hands.push(
+      //       this.drawCards(100, 150 - j * 50, [0, 0, 0, 0, 0], true),
+      //     );
+      //     j++;
+      //   }
+      // }
       this.createGlobalAnims();
     });
-    let maskGraphic = this.make.graphics();
-    maskGraphic.fillRect(0, 192, 256, 192);
-    maskGraphic.fillStyle(0xffffff);
-    this.upperScreenMask = maskGraphic.createGeometryMask();
 
     let onGameState = function () {
       if (this.gameState.value.data.round > 0) {
-        //when game has started
         //loop over each user
-        if (this.round != this.gameState.value.data.round) {
-          //play round ending and turn deciding anims
-          this.round = this.gameState.value.data.round;
-          console.log("hi");
-        }
-        let opponentCount = 0;
-        for (let i = 0; i < this.gameState.value.data.users.length; i++) {
-          let buffer = () => {
-            setTimeout(() => {
-              this.coins[i].object.text = Number(this.coins[i].object.text) + 1;
-              if (
-                this.gameState.value.data.users[i].coins !=
-                this.coins[i].object.text
-              ) {
-                buffer();
-              }
-            }, 50);
-          };
-
-          if (this.gameState.value.users[i].id == this.userData.value.id) {
-            if (!this.hands[i]) {
-              this.hands[i] = this.drawCards(
-                67,
-                345,
-                this.gameState.value.data.users[i].hand,
-                false,
-                true,
-              );
-            } else {
-              //update own hand
-              let oldHand = [];
-              for (let k = 0; k < 5; k++) {
-                oldHand.push(
-                  this.cardTypes.indexOf(
-                    this.hands[i].objects[k].getData("type"),
-                  ),
-                );
-              }
-              if (
-                JSON.stringify(oldHand) !=
-                JSON.stringify(this.gameState.value.data.users[i].hand)
-              )
-                this.hands[i].replace(
-                  oldHand,
-                  this.gameState.value.data.users[i].hand,
-                  this.gameState.value.data.users[i].drawn,
-                );
-            }
-          } else {
-            if (!this.hands[i]) {
-              this.hands[i] = this.drawCards(
-                100,
-                150 - opponentCount * 50,
-                [0, 0, 0, 0, 0],
-                true,
-              );
-              opponentCount++;
-            } else {
-              // this.hands[i].reveal(this.gameState.value.data.users[i].hand);
-            }
-          }
-          if (
-            this.gameState.value.data.users[i].selected &&
-            this.hands[i] &&
-            this.gameState.value.users[i].id != this.userData.value.id
-          ) {
-            this.hands[i].setSelected(
-              this.gameState.value.data.users[i].selected,
-            );
-          }
-        }
-        if (this.gameState.value.data.turn == this.userData.value.id) {
-          this.drawButton.setVisible(true);
-          this.turnStatus.setText("It's your turn.");
-        } else {
-          this.drawButton.setVisible(false);
-          this.turnStatus.setText(
-            "It's " +
-              this.gameState.value.users[
-                indexOfUser(this.gameState.value.data.turn)
-              ].name +
-              "'s turn.",
-          );
-        }
-        if (
-          this.gameState.value.data?.users[
-            indexOfUser(this.userData.value.id)
-          ]?.selected?.includes(true)
-        ) {
-          this.drawButton.setFrame(1);
-        } else {
-          this.drawButton.setFrame(0);
-        }
+        // if (this.round != this.gameState.value.data.round) {
+        //   //play round ending and turn deciding anims
+        //   this.round = this.gameState.value.data.round;
+        //   console.log("hi");
+        //   if (this.round != 1) {
+        //     for (let i = 0; i < this.gameState.value.users.length; i++) {
+        //       console.log(this.hands[i]);
+        //       this.hands[i].sort(
+        //         this.gameState.value.data.users[i].hand,
+        //         this.gameState.value.data.winners.cards[i].sorted,
+        //       );
+        //     }
+        //   }
+        // }
+        // let opponentCount = 0;
+        // // coin incrementing
+        // for (let i = 0; i < this.gameState.value.data.users.length; i++) {
+        //   let buffer = () => {
+        //     setTimeout(() => {
+        //       this.coins[i].object.setText(
+        //         Number(this.coins[i].object.text) + 1,
+        //       );
+        //       if (
+        //         this.gameState.value.data.users[i].coins !=
+        //         this.coins[i].object.text
+        //       ) {
+        //         buffer();
+        //       }
+        //     }, 50);
+        //   };
+        //   buffer();
+        //   if (this.gameState.value.users[i].id == this.userData.value.id) {
+        //     let oldHand = [];
+        //     for (let k = 0; k < 5; k++) {
+        //       oldHand.push(
+        //         this.cardTypes.indexOf(
+        //           this.hands[i].objects[k].getData("type"),
+        //         ),
+        //       );
+        //       if (
+        //         JSON.stringify(oldHand) !=
+        //         JSON.stringify(this.gameState.value.data.users[i].hand)
+        //       )
+        //         this.hands[i].replace(
+        //           oldHand,
+        //           this.gameState.value.data.users[i].hand,
+        //           this.gameState.value.data.users[i].drawn,
+        //         );
+        //     }
+        //   } else {
+        //     if (!this.hands[i]) {
+        //       this.hands[i] = this.drawCards(
+        //         100,
+        //         150 - opponentCount * 50,
+        //         [0, 0, 0, 0, 0],
+        //         true,
+        //       );
+        //       opponentCount++;
+        //     } else {
+        //       // this.hands[i].reveal(this.gameState.value.data.users[i].hand);
+        //     }
+        //   }
+        //   if (
+        //     this.gameState.value.data.users[i].selected &&
+        //     this.hands[i] &&
+        //     this.gameState.value.users[i].id != this.userData.value.id
+        //   ) {
+        //     this.hands[i].setSelected(
+        //       this.gameState.value.data.users[i].selected,
+        //     );
+        //   }
+        // }
+        // if (this.gameState.value.data.turn == this.userData.value.id) {
+        //   this.drawButton.setVisible(true);
+        //   this.turnStatus.setText("It's your turn.");
+        // } else {
+        //   this.drawButton.setVisible(false);
+        //   this.turnStatus.setText(
+        //     "It's " +
+        //       this.gameState.value.users[
+        //         indexOfUser(this.gameState.value.data.turn)
+        //       ].name +
+        //       "'s turn.",
+        //   );
+        // }
+        // if (
+        //   this.gameState.value.data?.users[
+        //     indexOfUser(this.userData.value.id)
+        //   ]?.selected?.includes(true)
+        // ) {
+        //   this.drawButton.setFrame(1);
+        // } else {
+        //   this.drawButton.setFrame(0);
+        // }
       }
     }.bind(this);
     let onTry = function (args) {
@@ -353,25 +399,15 @@ export default class PicturePoker extends Scene {
         192,
         this.cardTypes[cards[i]] + "-card",
       );
+      interactiveCard
+        .setInteractive()
+        .setFrame(1)
+        .setData("type", this.cardTypes[cards[i]])
+        .setData("selected", false);
       if (onBottom) {
         interactiveCard.setMask(this.upperScreenMask);
       }
       if (!(cards[i] == 0)) {
-        // animations
-        interactiveCard.play("begin-turn");
-        interactiveCard.chain("finish-turn-" + this.cardTypes[cards[i]]);
-        interactiveCard
-          .setInteractive()
-          .setFrame(1)
-          .setData("type", this.cardTypes[cards[i]])
-          .setData("selected", false);
-        this.tweens.add({
-          targets: interactiveCard, // The sprite to move
-          x: x + i * (noMargin ? 32 : 40), // The destination x-coordinate
-          y: y, // The destination y-coordinate
-          ease: "Linear", // Easing function
-          duration: 200, // Duration in milliseconds
-        });
         interactiveCard.on("pointerdown", () => {
           if (this.gameState.value.data.turn == this.userData.value.id) {
             if (interactiveCard.getData("selected")) {
@@ -404,7 +440,7 @@ export default class PicturePoker extends Scene {
     }
     return {
       objects: cardObjects,
-      setSelected: (hand) => {
+      select: (hand) => {
         for (let i = 0; i < hand.length; i++) {
           cardObjects[i].setData("selected", hand[i]);
           this.tweens.add({
@@ -425,10 +461,8 @@ export default class PicturePoker extends Scene {
           }
         }
       },
-      replace: (hand, newHand, drawn) => {
-        let cardsAnimated = 0;
+      send: (hand, drawn, onComplete) => {
         for (let i = 0; i < hand.length; i++) {
-          let delay = 200 + cardsAnimated * 300;
           if (drawn[i]) {
             cardObjects[i].anims.playReverse(
               "finish-turn-" + this.cardTypes[hand[i]],
@@ -441,32 +475,51 @@ export default class PicturePoker extends Scene {
                 y: y - 200, // The destination y-coordinate
                 ease: "Linear", // Easing function
                 duration: 400, // Duration in milliseconds
-                onComplete: () => {
-                  cardObjects[i].setPosition(128, y - 200);
-                  cardObjects[i].setTexture("back-card", 0);
-                  setTimeout(() => {
-                    this.tweens.add({
-                      targets: cardObjects[i], // The sprite to move
-                      x: x + i * (noMargin ? 32 : 40), // The destination x-coordinate
-                      y: y, // The destination y-coordinate
-                      ease: "Linear", // Easing function
-                      duration: 300, // Duration in milliseconds
-                      onComplete: () => {
-                        cardObjects[i].anims.play("begin-turn");
-                        cardObjects[i].anims.chain(
-                          "finish-turn-" + this.cardTypes[newHand[i]],
-                        );
-                      },
-                    });
-                  }, delay);
-                },
+                onComplete: onComplete,
               });
               200;
             }, 167);
-
-            cardObjects[i].setData("type", this.cardTypes[newHand[i]]);
-            cardsAnimated++;
           }
+        }
+      },
+      deal: (hand, drawn) => {
+        for (let i = 0, j = 0; i < hand.length; i++) {
+          if (drawn[i]) {
+            cardObjects[i].setPosition(128, y - 200);
+            cardObjects[i].setTexture("back-card", 0);
+            setTimeout(() => {
+              this.tweens.add({
+                targets: cardObjects[i], // The sprite to move
+                x: x + i * (noMargin ? 32 : 40), // The destination x-coordinate
+                y: y, // The destination y-coordinate
+                ease: "Linear", // Easing function
+                duration: 300, // Duration in milliseconds
+                onComplete: () => {
+                  cardObjects[i].anims.play("begin-turn");
+                  cardObjects[i].anims.chain(
+                    "finish-turn-" + this.cardTypes[hand[i]],
+                  );
+                },
+              });
+            }, delay);
+          }
+        }
+      },
+      sort: (hand, newHand) => {
+        let usedIndices = [];
+        for (let i = 0; i < newHand.length; i++) {
+          let cardIndex = hand.indexOf(newHand[i]);
+          if (usedIndices.includes(cardIndex)) {
+            cardIndex = hand.indexOf(newHand[i], Math.max(...usedIndices));
+          }
+          usedIndices.push(cardIndex);
+          this.tweens.add({
+            targets: cardObjects[i], // The sprite to move
+            x: x + cardIndex * (noMargin ? 32 : 40), // The destination x-coordinate
+            y: y, // The destination y-coordinate
+            ease: "Linear", // Easing function
+            duration: 200, // Duration in milliseconds
+          });
         }
       },
     };
