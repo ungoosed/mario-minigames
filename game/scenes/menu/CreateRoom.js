@@ -23,6 +23,8 @@ export class CreateRoom extends Scene {
 
     this.add.image(128, 200, "group-name").setOrigin(0.5, 0);
     this.add.image(128 - 65, 248, "num-people-text").setOrigin(0.5, 0);
+    this.add.image(128 + 55, 264, "password-text").setOrigin(0.5, 0);
+
     this.numPeopleNumbers = this.add
       .image(128 - 65, 291, "num-people-numbers")
       .setOrigin(0.5, 0)
