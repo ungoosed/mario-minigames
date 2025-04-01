@@ -23,6 +23,9 @@ export class Preloader extends Scene {
   }
 
   preload() {
+    this.load.setPath("assets/misc");
+    this.load.image("lock-icon", "lock-icon.png");
+
     this.load.setPath("assets/menu");
 
     this.load.image("menu-background", "menu-background.png");

@@ -17,12 +17,14 @@ export class CreateRoom extends Scene {
     this.add.image(128, 156, "dialogue2").setOrigin(0.5, 0);
 
     this.add.image(128, 213, "text-input").setOrigin(0.5, 0);
-    this.add.image(128, 285, "number-input").setOrigin(0.5, 0);
+    this.add.image(185, 280, "text-input").setOrigin(0.5, 0);
+
+    this.add.image(128 - 65, 285, "number-input").setOrigin(0.5, 0);
 
     this.add.image(128, 200, "group-name").setOrigin(0.5, 0);
-    this.add.image(128, 248, "num-people-text").setOrigin(0.5, 0);
+    this.add.image(128 - 65, 248, "num-people-text").setOrigin(0.5, 0);
     this.numPeopleNumbers = this.add
-      .image(128, 291, "num-people-numbers")
+      .image(128 - 65, 291, "num-people-numbers")
       .setOrigin(0.5, 0)
       .setFrame(1);
 
@@ -82,11 +84,50 @@ export class CreateRoom extends Scene {
 
       selectAll: false,
     });
+    const passwordInput = new InputText(this, 185, 298, 125, 35, {
+      x: 0,
+      y: 0,
+      width: undefined,
+      height: undefined,
+
+      type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
+
+      // Element properties
+      id: "newRoomName",
+      text: undefined,
+      maxLength: undefined,
+      minLength: undefined,
+      placeholder: undefined,
+      tooltip: undefined,
+      readOnly: false,
+      spellCheck: false,
+      autoComplete: "off",
+
+      // Style properties
+      align: "center",
+      paddingLeft: undefined,
+      paddingRight: undefined,
+      paddingTop: undefined,
+      paddingBottom: undefined,
+      fontFamily: undefined,
+      fontSize: undefined,
+      color: "#ffffff",
+      border: 0,
+      backgroundColor: "transparent",
+      borderColor: "transparent",
+      borderRadius: undefined,
+      outline: "none",
+      direction: "ltr",
+
+      selectAll: false,
+    });
     this.add.existing(roomNameInput);
-    this.backButton = this.add.image(232, 360, "back-button");
-    this.increasePlayers = this.add.image(156, 297, "right-arrow-button");
+    this.add.existing(passwordInput);
+
+    this.backButton = this.add.image(232, 365, "back-button");
+    this.increasePlayers = this.add.image(156 - 65, 297, "right-arrow-button");
     this.decreasePlayers = this.add
-      .image(97, 297, "left-arrow-button")
+      .image(97 - 65, 297, "left-arrow-button")
       .setVisible(false);
     this.confirmButton = this.add.image(128, 346, "create-button-confirm");
 
@@ -115,12 +156,13 @@ export class CreateRoom extends Scene {
       //pipe to mitt
       this.$bus.emit("createroom", {
         roomKey: roomNameInput.text,
+        password: passwordInput.text ? passwordInput.text : "none",
         maxUsers: numPeople,
       });
       //request join room for room you created as the host
-
       this.$bus.emit("joinroom", {
         roomKey: roomNameInput.text,
+        password: passwordInput.text ? passwordInput.text : "none",
       });
       roomNameInput.setText("");
     });

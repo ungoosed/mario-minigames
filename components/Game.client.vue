@@ -59,7 +59,11 @@ function createRoom(args) {
         JSON.stringify({
             type: "createroom",
             uuid: userData.value.uuid,
-            content: { roomKey: args.roomKey, maxUsers: args.maxUsers },
+            content: {
+                roomKey: args.roomKey,
+                maxUsers: args.maxUsers,
+                password: args.password,
+            },
         }),
     );
 }
@@ -72,7 +76,11 @@ function joinRoom(args) {
             type: "join",
             uuid: userData.value.uuid,
             id: userData.value.id,
-            content: { roomKey: args.roomKey, name: userData.value.name },
+            content: {
+                roomKey: args.roomKey,
+                name: userData.value.name,
+                password: args.password,
+            },
         }),
     );
 }

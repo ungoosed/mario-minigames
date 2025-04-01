@@ -97,6 +97,13 @@ export class RoomLobby extends Scene {
       )
       .setCharacterTint(0, -1, true, 0xffffff);
     this.drawUsers();
+    let password = this.add.bitmapText(
+      150,
+      200,
+      "ds",
+      this.gameState.value.password,
+    );
+    console.log(this.gameState.value.password);
     let onGameState = function () {
       if (
         this.gameState.value.users[0]?.id == this.userData.value.id ||

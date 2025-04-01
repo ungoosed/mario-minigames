@@ -36,6 +36,8 @@ export class SetProfile extends Scene {
     this.continueButton = this.add.image(128, 360, "continue-button");
     makeHoverable(this.continueButton);
     this.continueButton.on("pointerdown", () => {
+      this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
+      this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.userData.value.name = nameInput.text;
       this.scene.start("MainMenu");
     });

@@ -30,6 +30,7 @@ function getGameState(roomKey) {
     content: {
       type: "gameState",
       data: {
+        password: rooms[roomKey].password,
         roomKey: roomKey,
         users: publicUserList,
         data: rooms[roomKey].data,
@@ -67,7 +68,7 @@ export default defineWebSocketHandler({
       rooms[userData.roomKey].users.splice(userData.index, 1);
       peer.unsubscribe(userData.roomKey);
       broadcastGameState(userData.roomKey, peer);
-      if (rooms[userData.roomKey].users.length <= 0) {
+      if (rooms[userData.roomKey].users.length < 1) {
         delete rooms[userData.roomKey];
       }
     }
@@ -88,6 +89,7 @@ export default defineWebSocketHandler({
         let roomList = Object.keys(rooms).map((key) => {
           return {
             roomKey: key,
+            password: rooms[key].password == "none" ? false : true,
             maxUsers: rooms[key].maxUsers,
             currentUsers: Object.keys(rooms[key].users).length,
           };
@@ -112,26 +114,36 @@ export default defineWebSocketHandler({
       if (!Object.hasOwn(rooms, content.roomKey)) {
         rooms[content.roomKey] = {
           maxUsers: content.maxUsers,
+          password: content.password,
           users: [],
           data: {},
         };
+        console.log("created room");
       }
     }
     if (meta.type == "join") {
-      // params: type, id, uuid, content: {roomKey, name}
-      if (!findUser(meta.uuid) && rooms[content.roomKey]) {
-        let target = rooms[content.roomKey];
-        if (target.users.length < target.maxUsers) {
-          target.users.push({
-            uuid: meta.uuid,
-            id: meta.id,
-            name: content.name,
-            points: 0,
-          });
-          peer.subscribe(content.roomKey);
-          broadcastGameState(content.roomKey, peer);
-        } else {
-          peer.send(JSON.stringify({ type: "error", reason: "room full" }));
+      // params: type, id, uuid, content: {roomKey, name, password}
+      console.log(rooms[content.roomKey]);
+      console.log(content.password);
+      if (
+        rooms[content.roomKey].password == "none" ||
+        rooms[content.roomKey].password == content.password
+      ) {
+        console.log("success");
+        if (!findUser(meta.uuid) && rooms[content.roomKey]) {
+          let target = rooms[content.roomKey];
+          if (target.users.length < target.maxUsers) {
+            target.users.push({
+              uuid: meta.uuid,
+              id: meta.id,
+              name: content.name,
+              points: 0,
+            });
+            peer.subscribe(content.roomKey);
+            broadcastGameState(content.roomKey, peer);
+          } else {
+            peer.send(JSON.stringify({ type: "error", reason: "room full" }));
+          }
         }
       }
     }

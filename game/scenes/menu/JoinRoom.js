@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
+import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import { useNuxtApp } from "#app";
 export class JoinRoom extends Scene {
   constructor() {
@@ -11,6 +12,7 @@ export class JoinRoom extends Scene {
     this.selectedRoom = undefined;
     this.startPoll = false;
     this.gameState = useGameState("gameState");
+    this.password = "";
   }
 
   generateRoomButtons() {
@@ -47,7 +49,11 @@ export class JoinRoom extends Scene {
       this.numPagesText.setVisible(true);
     }
     for (let i = 0; i < numEntries; i++) {
-      let roomKey = this.roomList.value[i + this.currentPage * 3 - 3]?.roomKey;
+      let roomData = this.roomList.value[i + this.currentPage * 3 - 3];
+      let roomKey = roomData?.roomKey;
+      let currentUsers = roomData?.currentUsers;
+      let hasPassword = !roomData?.password;
+      let maxUsers = roomData?.maxUsers;
       let formattedRoomKey;
       if (roomKey.length > 18) {
         formattedRoomKey = roomKey.slice(0, 16) + " ...";
@@ -58,22 +64,23 @@ export class JoinRoom extends Scene {
         this.add.image(8, 203 + i * 34, "room-button-select").setOrigin(0, 0),
       );
       let name = this.add
-        .bitmapText(12, 207 + i * 34, "ds", formattedRoomKey)
+        .bitmapText(hasPassword ? 12 : 29, 207 + i * 34, "ds", formattedRoomKey)
         .setOrigin(0, 0);
       let users = this.add
-        .bitmapText(
-          205,
-          208 + i * 34,
-          "ds",
-          this.roomList.value[i + this.currentPage * 3 - 3].currentUsers +
-            "/" +
-            this.roomList.value[i + this.currentPage * 3 - 3].maxUsers,
-        )
+        .bitmapText(205, 208 + i * 34, "ds", currentUsers + "/" + maxUsers)
         .setOrigin(0, 0);
+      if (currentUsers == maxUsers) {
+        users.setTint(0xffff00);
+      }
+      let lockIcon = this.add
+        .image(12, 206 + i * 34, "lock-icon")
+        .setOrigin(0, 0)
+        .setVisible(hasPassword ? false : true);
 
       image.on("pointerover", () => {
-        name.setPosition(14, 208 + i * 34);
+        name.setPosition(hasPassword ? 14 : 31, 208 + i * 34);
         users.setPosition(207, 210 + i * 34);
+        lockIcon.setPosition(14, 208 + i * 34);
       });
       image.on("pointerdown", () => {
         if (this.selectedRoom == i) {
@@ -89,10 +96,12 @@ export class JoinRoom extends Scene {
         }
       });
       image.on("pointerout", () => {
-        name.setPosition(12, 206 + i * 34);
+        lockIcon.setPosition(12, 206 + i * 34);
+        name.setPosition(hasPassword ? 12 : 29, 206 + i * 34);
         users.setPosition(205, 208 + i * 34);
       });
       this.roomButtonsArr.push({
+        lockIcon: lockIcon,
         button: image,
         name: name,
         numUsers: users,
@@ -100,7 +109,7 @@ export class JoinRoom extends Scene {
         roomKey: roomKey,
         index: i,
       });
-      this.roomButtonsGroup.addMultiple([image, name, users]);
+      this.roomButtonsGroup.addMultiple([image, name, users, lockIcon]);
     }
 
     this.pageNumberTracker.setText(this.currentPage + "/" + this.numPages);
@@ -158,6 +167,50 @@ export class JoinRoom extends Scene {
       "ds",
       this.currentPage + "/" + this.numPages,
     );
+    let passwordInputBackground = this.add
+      .image(128, 270 - 18, "text-input")
+      .setOrigin(0.5, 0);
+    const passwordInput = new InputText(this, 128, 270, 125, 35, {
+      x: 0,
+      y: 0,
+      width: undefined,
+      height: undefined,
+
+      type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
+
+      // Element properties
+      id: "newRoomName",
+      text: undefined,
+      maxLength: undefined,
+      minLength: undefined,
+      placeholder: undefined,
+      tooltip: undefined,
+      readOnly: false,
+      spellCheck: false,
+      autoComplete: "off",
+
+      // Style properties
+      align: "center",
+      paddingLeft: undefined,
+      paddingRight: undefined,
+      paddingTop: undefined,
+      paddingBottom: undefined,
+      fontFamily: undefined,
+      fontSize: undefined,
+      color: "#ffffff",
+      border: 0,
+      backgroundColor: "transparent",
+      borderColor: "transparent",
+      borderRadius: undefined,
+      outline: "none",
+      direction: "ltr",
+
+      selectAll: false,
+    });
+    this.add.existing(passwordInput);
+    passwordInput.setVisible(false);
+    passwordInputBackground.setVisible(false);
+
     //set click callbacks
     this.backButton.on("pointerdown", () => {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
@@ -166,6 +219,8 @@ export class JoinRoom extends Scene {
       this.scene.stop();
     });
     this.increasePageButton.on("pointerdown", () => {
+      passwordInput.setVisible(false);
+      passwordInputBackground.setVisible(false);
       if (this.currentPage < this.numPages) {
         this.currentPage++;
         this.generateRoomButtons();
@@ -178,6 +233,8 @@ export class JoinRoom extends Scene {
       }
     });
     this.decreasePageButton.on("pointerdown", () => {
+      passwordInput.setVisible(false);
+      passwordInputBackground.setVisible(false);
       if (this.currentPage > 1) {
         this.currentPage--;
         this.generateRoomButtons();
@@ -190,13 +247,23 @@ export class JoinRoom extends Scene {
       }
     });
     this.confirmButton.on("pointerdown", () => {
+      console.log(this.roomList);
+      console.log(this.roomButtonsArr);
+      console.log(this.selectedRoom);
       if (this.selectedRoom != undefined) {
-        this.$bus.emit("joinroom", {
-          roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
-        });
+        if (this.roomList.value[this.selectedRoom].password) {
+          passwordInput.setVisible(true);
+          passwordInputBackground.setVisible(true);
+        } else {
+          this.$bus.emit("joinroom", {
+            roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
+          });
+        }
       }
     });
     this.syncButton.on("pointerdown", () => {
+      passwordInput.setVisible(false);
+      passwordInputBackground.setVisible(false);
       this.$bus.emit("refreshrooms");
     });
     // refresh room list
@@ -223,6 +290,7 @@ export class JoinRoom extends Scene {
     });
   }
   update() {
+    //scroll minigames logo
     this.minigamesTitle1.setX(this.minigamesTitle1.x + -0.5);
     this.minigamesTitle2.setX(this.minigamesTitle2.x + -0.5);
     if (this.minigamesTitle2.x < -128) {
