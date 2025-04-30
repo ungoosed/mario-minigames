@@ -18,7 +18,6 @@ export class CreateRoom extends Scene {
 
     this.add.image(128, 213, "text-input").setOrigin(0.5, 0);
     this.add.image(185, 280, "text-input").setOrigin(0.5, 0);
-
     this.add.image(128 - 65, 285, "number-input").setOrigin(0.5, 0);
 
     this.add.image(128, 200, "group-name").setOrigin(0.5, 0);
