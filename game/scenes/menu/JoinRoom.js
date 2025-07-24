@@ -85,6 +85,7 @@ export class JoinRoom extends Scene {
       image.on("pointerdown", () => {
         if (this.selectedRoom == i) {
           this.selectedRoom = undefined;
+          this.confirmButton.setFrame(1).disableInteractive();
           name.setText(formattedRoomKey);
         } else {
           this.selectedRoom = i;
@@ -93,6 +94,7 @@ export class JoinRoom extends Scene {
             e.name.setText(e.formattedRoomKey);
           }
           name.setText("[ " + formattedRoomKey + " ]");
+          this.confirmButton.setFrame(0).setInteractive();
         }
       });
       image.on("pointerout", () => {
@@ -109,6 +111,12 @@ export class JoinRoom extends Scene {
         roomKey: roomKey,
         index: i,
       });
+      if (currentUsers == maxUsers) {
+        image.setFrame(1).disableInteractive();
+        name.setPosition(hasPassword ? 14 : 31, 208 + i * 34);
+        users.setPosition(207, 210 + i * 34);
+        lockIcon.setPosition(14, 208 + i * 34);
+      }
       this.roomButtonsGroup.addMultiple([image, name, users, lockIcon]);
     }
 
@@ -148,7 +156,10 @@ export class JoinRoom extends Scene {
     this.backButton = makeHoverable(this.add.image(232, 360, "back-button"));
     this.confirmButton = makeHoverable(
       this.add.image(128, 358, "join-button-confirm"),
-    );
+    )
+      .setFrame(1)
+      .disableInteractive();
+
     this.syncButton = makeHoverable(
       this.add.image(6, 358, "sync-button").setOrigin(0, 0.5),
     );
@@ -167,9 +178,13 @@ export class JoinRoom extends Scene {
       "ds",
       this.currentPage + "/" + this.numPages,
     );
+    // password stuff
     let passwordInputBackground = this.add
       .image(128, 270 - 18, "text-input")
       .setOrigin(0.5, 0);
+    let passwordSubmitButton = makeHoverable(
+      this.add.image(200, 270, "right-arrow-button"),
+    );
     const passwordInput = new InputText(this, 128, 270, 125, 35, {
       x: 0,
       y: 0,
