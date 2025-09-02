@@ -111,7 +111,7 @@ export default defineWebSocketHandler({
     }
     if (meta.type == "createroom") {
       // params: type, content: {roomKey, maxUsers}
-      if (!Object.hasOwn(rooms, content.roomKey)) {
+      if (!rooms[content.roomKey]) {
         rooms[content.roomKey] = {
           maxUsers: content.maxUsers,
           password: content.password,
