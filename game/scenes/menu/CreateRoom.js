@@ -160,11 +160,11 @@ export class CreateRoom extends Scene {
         password: passwordInput.text ? passwordInput.text : "none",
         maxUsers: numPeople,
       });
-      //request join room for room you created as the host
-      this.$bus.emit("joinroom", {
-        roomKey: roomNameInput.text,
-        password: passwordInput.text ? passwordInput.text : "none",
-      });
+      // request join room for room you created as the host
+      // this.$bus.emit("joinroom", {
+      //   roomKey: roomNameInput.text,
+      //   password: passwordInput.text ? passwordInput.text : "none",
+      // });
       roomNameInput.setText("");
     });
 
@@ -198,9 +198,14 @@ export class CreateRoom extends Scene {
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("RoomLobby");
     }.bind(this);
+    let onError = function () {
+      this.scene.wake("Error");
+    }.bind(this);
     this.$bus.on("gamestate", onGameState);
+    this.$bus.on("error", onError);
     this.events.on("shutdown", () => {
       this.$bus.off("gamestate", onGameState);
+      this.$bus.off("error", onError);
     });
   }
   update() {

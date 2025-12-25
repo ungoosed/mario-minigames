@@ -1,39 +1,57 @@
 <script setup>
 import PhaserGame from "nuxtjs-phaser/phaserGame.vue";
-const { status, data, send, open } = useWebSocket(
-    `ws://${location.host}/api/minigames`,
-);
 const { $bus } = useNuxtApp();
 
 const roomList = useRoomList("roomList");
 const gameState = useGameState("gameState");
 const userData = useUserData("userData");
 
+const { status, data, send, open } = useWebSocket(
+    `ws://${location.host}/api/minigames`,
+    {
+        onMessage(_, event) {
+            let parsed = JSON.parse(event.data);
+            if (parsed.type == "uuid") {
+                userData.value.uuid = parsed.content[0];
+                userData.value.id = parsed.content[1];
+                console.log("uuid");
+                console.log(userData.value.uuid);
+                console.log("id");
+                console.log(userData.value.id);
+            }
+            if (parsed.type == "data") {
+                if (parsed.content.type == "roomList") {
+                    roomList.value = parsed.content.data;
+                    $bus.emit("newroomlist");
+                }
+                if (parsed.content.type == "gameState") {
+                    Object.assign(gameState.value, parsed.content.data);
+                    $bus.emit("gamestate");
+                }
+            }
+            if (parsed.type == "try") {
+                $bus.emit("try", { id: parsed.id, data: parsed.data });
+            }
+            if (parsed.type == "error") {
+                console.log(parsed.reason);
+                if (parsed.reason == "disconnect") {
+                    $bus.emit("error", { reason: "disconnect" });
+                }
+                if (parsed.reason == "room-full") {
+                    $bus.emit("error", { reason: "room-full" });
+                }
+                if (parsed.reason == "name-taken") {
+                    $bus.emit("error", { reason: "name-taken" });
+                }
+                if (parsed.reason == "incorrect") {
+                    $bus.emit("error", { reason: "incorrect" });
+                }
+            }
+        },
+    },
+);
+
 // websocket stuff
-watch(data, (message) => {
-    let parsed = JSON.parse(message);
-    if (parsed.type == "uuid") {
-        userData.value.uuid = parsed.content[0];
-        userData.value.id = parsed.content[1];
-        console.log("uuid");
-        console.log(userData.value.uuid);
-        console.log("id");
-        console.log(userData.value.id);
-    }
-    if (parsed.type == "data") {
-        if (parsed.content.type == "roomList") {
-            roomList.value = parsed.content.data;
-            $bus.emit("newroomlist");
-        }
-        if (parsed.content.type == "gameState") {
-            Object.assign(gameState.value, parsed.content.data);
-            $bus.emit("gamestate");
-        }
-    }
-    if (parsed.type == "try") {
-        $bus.emit("try", { id: parsed.id, data: parsed.data });
-    }
-});
 
 // phaser stuff
 const createGame = ref(undefined);
@@ -59,8 +77,10 @@ function createRoom(args) {
         JSON.stringify({
             type: "createroom",
             uuid: userData.value.uuid,
+            id: userData.value.id,
             content: {
                 roomKey: args.roomKey,
+                name: userData.value.name,
                 maxUsers: args.maxUsers,
                 password: args.password,
             },

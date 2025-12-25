@@ -29,6 +29,8 @@ export class Preloader extends Scene {
     this.load.setPath("assets/menu");
 
     this.load.image("menu-background", "menu-background.png");
+    this.load.image("error-background", "error-background.png");
+
     this.load.image("text-input", "text-input.png");
     this.load.image("title-background", "title-background.png");
 
@@ -57,6 +59,11 @@ export class Preloader extends Scene {
     this.load.image("dialogue-background1", "dialogue-background1.png");
     this.load.image("dialogue-background2", "dialogue-background2.png");
     this.load.image("dialogue-background3", "dialogue-background3.png");
+    this.load.image(
+      "error-dialogue-background",
+      "error-dialogue-background.png",
+    );
+
     this.load.image("group-name", "group-name.png");
     this.load.image("dialogue1", "dialogue1.png");
     this.load.image("dialogue2", "dialogue2.png");
@@ -150,5 +157,7 @@ export class Preloader extends Scene {
 
   create() {
     this.scene.start("SetProfile");
+    this.scene.launch("Error");
+    this.scene.sleep("Error");
   }
 }

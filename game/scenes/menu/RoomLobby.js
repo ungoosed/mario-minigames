@@ -104,6 +104,9 @@ export class RoomLobby extends Scene {
       this.gameState.value.password,
     );
     console.log(this.gameState.value.password);
+    let onError = function () {
+      this.scene.start("MainMenu");
+    }.bind(this);
     let onGameState = function () {
       if (
         this.gameState.value.users[0]?.id == this.userData.value.id ||
@@ -118,7 +121,10 @@ export class RoomLobby extends Scene {
       }
     }.bind(this);
     this.$bus.on("gamestate", onGameState);
+    this.$bus.on("error", onError);
+
     this.events.on("shutdown", () => {
+      this.$bus.off("error", onError);
       this.$bus.off("gamestate", onGameState);
     });
   }

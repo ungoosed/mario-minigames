@@ -156,12 +156,17 @@ export class SelectGame extends Scene {
         });
       }
     }.bind(this);
+    let onError = function () {
+      this.scene.start("MainMenu");
+    }.bind(this);
     this.$bus.on("gamestate", onGameState);
     this.$bus.on("try", onTry);
+    this.$bus.on("error", onError);
 
     this.events.on("shutdown", () => {
       this.$bus.off("gamestate", onGameState);
       this.$bus.off("try", onTry);
+      this.$bus.off("error", onError);
     });
   }
   update() {}

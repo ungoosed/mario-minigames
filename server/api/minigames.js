@@ -52,6 +52,12 @@ function forwardAction(roomKey, id, action) {
   let host = users[rooms[roomKey].users[0].uuid];
   host.send(JSON.stringify({ type: "try", id: id, data: action }));
 }
+function destroyRoom(roomKey) {
+  for (let i = 0; i < rooms[roomKey].users.length; i++) {
+    users[rooms[roomKey].users[i].uuid].unsubscribe(roomKey);
+  }
+  delete rooms[roomKey];
+}
 export default defineWebSocketHandler({
   open(peer) {
     let uuid = uuidv4();
@@ -65,13 +71,14 @@ export default defineWebSocketHandler({
       Object.keys(users).find((key) => users[key] == peer),
     );
     if (userData) {
-      rooms[userData.roomKey].users.splice(userData.index, 1);
-      peer.unsubscribe(userData.roomKey);
-      broadcastGameState(userData.roomKey, peer);
-      if (rooms[userData.roomKey].users.length < 1) {
-        delete rooms[userData.roomKey];
-      }
+      peer.publish(
+        userData.roomKey,
+        JSON.stringify({ type: "error", reason: "disconnect" }),
+      );
+      destroyRoom(userData.roomKey);
     }
+    delete users[Object.keys(users).find((key) => users[key] == peer)];
+    delete users[Object.keys(users).find((key) => users[key] == peer)];
   },
   error(peer, error) {
     console.log("error!", peer, error);
@@ -119,6 +126,17 @@ export default defineWebSocketHandler({
           data: {},
         };
         console.log("created room");
+        rooms[content.roomKey].users.push({
+          uuid: meta.uuid,
+          id: meta.id,
+          name: content.name,
+          points: 0,
+        });
+        peer.subscribe(content.roomKey);
+        broadcastGameState(content.roomKey, peer);
+        console.log("bufere!");
+      } else {
+        peer.send(JSON.stringify({ type: "error", reason: "name-taken" }));
       }
     }
     if (meta.type == "join") {
@@ -142,22 +160,22 @@ export default defineWebSocketHandler({
             peer.subscribe(content.roomKey);
             broadcastGameState(content.roomKey, peer);
           } else {
-            peer.send(JSON.stringify({ type: "error", reason: "room full" }));
+            peer.send(JSON.stringify({ type: "error", reason: "room-full" }));
           }
         }
+      } else {
+        peer.send(JSON.stringify({ type: "error", reason: "incorrect" }));
       }
     }
     if (meta.type == "leave") {
       // params: type, uuid
       let userData = findUser(meta.uuid);
-      if (userData) {
-        peer.unsubscribe(userData.roomKey);
-        rooms[userData.roomKey].users.splice(userData.index, 1);
-        broadcastGameState(userData.roomKey, peer);
-        if (rooms[userData.roomKey].users.length <= 0) {
-          delete rooms[userData.roomKey];
-        }
-      }
+      console.log(userData);
+      peer.publish(
+        userData.roomKey,
+        JSON.stringify({ type: "error", reason: "disconnect" }),
+      );
+      destroyRoom(userData.roomKey);
     }
     if (meta.type == "update") {
       // params: type, uuid, content: {roomKey, data}

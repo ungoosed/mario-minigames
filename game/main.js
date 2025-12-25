@@ -6,6 +6,7 @@ import { JoinRoom } from "./scenes/menu/JoinRoom";
 import { RoomLobby } from "./scenes/menu/RoomLobby";
 import { SelectGame } from "./scenes/menu/SelectGame";
 import { SetProfile } from "./scenes/menu/SetProfile";
+import { Error } from "./scenes/Error";
 export const createGame = (config = {}) =>
   new Phaser.Game({
     type: Phaser.AUTO,
@@ -47,5 +48,6 @@ export const createGame = (config = {}) =>
       RoomLobby,
       SetProfile,
       SelectGame,
+      Error,
     ],
   });

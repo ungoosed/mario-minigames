@@ -2,6 +2,7 @@ import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import { useNuxtApp } from "#app";
+import { MainMenu } from "../MainMenu";
 export class JoinRoom extends Scene {
   constructor() {
     super("JoinRoom");
@@ -12,12 +13,17 @@ export class JoinRoom extends Scene {
     this.selectedRoom = undefined;
     this.startPoll = false;
     this.gameState = useGameState("gameState");
-    this.password = "";
   }
 
   generateRoomButtons() {
+    this.selectedRoom = 0;
     this.roomButtonsArr.length = 0;
     this.roomButtonsGroup.clear(true, true);
+    this.confirmButton.setVisible(true).setFrame(1).disableInteractive();
+    this.passwordInput.setVisible(false);
+    this.passwordInputBackground.setVisible(false);
+    this.passwordInputBackgroundText.setVisible(false);
+    this.passwordSubmitButton.setVisible(false);
 
     if (this.roomList.value.length % 3 == 0) {
       this.numPages = this.roomList.value.length / 3;
@@ -85,8 +91,12 @@ export class JoinRoom extends Scene {
       image.on("pointerdown", () => {
         if (this.selectedRoom == i) {
           this.selectedRoom = undefined;
-          this.confirmButton.setFrame(1).disableInteractive();
+          this.confirmButton.setFrame(1).disableInteractive().setVisible(true);
           name.setText(formattedRoomKey);
+          this.passwordInput.setVisible(false);
+          this.passwordInputBackground.setVisible(false);
+          this.passwordInputBackgroundText.setVisible(false);
+          this.passwordSubmitButton.setVisible(false);
         } else {
           this.selectedRoom = i;
           for (let i = 0; i < this.roomButtonsArr.length; i++) {
@@ -94,7 +104,19 @@ export class JoinRoom extends Scene {
             e.name.setText(e.formattedRoomKey);
           }
           name.setText("[ " + formattedRoomKey + " ]");
-          this.confirmButton.setFrame(0).setInteractive();
+          if (!hasPassword) {
+            this.passwordInput.setVisible(true);
+            this.passwordInputBackground.setVisible(true);
+            this.passwordInputBackgroundText.setVisible(true);
+            this.passwordSubmitButton.setVisible(true);
+            this.confirmButton.setVisible(false);
+          } else {
+            this.passwordInput.setVisible(false);
+            this.passwordInputBackground.setVisible(false);
+            this.passwordInputBackgroundText.setVisible(false);
+            this.passwordSubmitButton.setVisible(false);
+            this.confirmButton.setFrame(0).setInteractive().setVisible(true);
+          }
         }
       });
       image.on("pointerout", () => {
@@ -119,7 +141,16 @@ export class JoinRoom extends Scene {
       }
       this.roomButtonsGroup.addMultiple([image, name, users, lockIcon]);
     }
-
+    if (this.currentPage > 1) {
+      this.decreasePageButton.setVisible(true);
+    } else {
+      this.decreasePageButton.setVisible(false);
+    }
+    if (this.currentPage < this.numPages) {
+      this.increasePageButton.setVisible(true);
+    } else {
+      this.increasePageButton.setVisible(false);
+    }
     this.pageNumberTracker.setText(this.currentPage + "/" + this.numPages);
   }
   create() {
@@ -179,13 +210,18 @@ export class JoinRoom extends Scene {
       this.currentPage + "/" + this.numPages,
     );
     // password stuff
-    let passwordInputBackground = this.add
-      .image(128, 270 - 18, "text-input")
-      .setOrigin(0.5, 0);
-    let passwordSubmitButton = makeHoverable(
-      this.add.image(200, 270, "right-arrow-button"),
-    );
-    const passwordInput = new InputText(this, 128, 270, 125, 35, {
+    this.passwordInputBackground = this.add
+      .image(114, 367 - 18, "text-input")
+      .setOrigin(0.5, 0)
+      .setVisible(false);
+    this.passwordInputBackgroundText = this.add
+      .image(114, 336, "password-text")
+      .setOrigin(0.5, 0)
+      .setVisible(false);
+    this.passwordSubmitButton = makeHoverable(
+      this.add.image(193, 361, "right-arrow-button"),
+    ).setVisible(false);
+    this.passwordInput = new InputText(this, 114, 367, 125, 35, {
       x: 0,
       y: 0,
       width: undefined,
@@ -222,9 +258,7 @@ export class JoinRoom extends Scene {
 
       selectAll: false,
     });
-    this.add.existing(passwordInput);
-    passwordInput.setVisible(false);
-    passwordInputBackground.setVisible(false);
+    this.add.existing(this.passwordInput);
 
     //set click callbacks
     this.backButton.on("pointerdown", () => {
@@ -234,31 +268,26 @@ export class JoinRoom extends Scene {
       this.scene.stop();
     });
     this.increasePageButton.on("pointerdown", () => {
-      passwordInput.setVisible(false);
-      passwordInputBackground.setVisible(false);
+      this.passwordInput.setVisible(false);
+      this.passwordInputBackground.setVisible(false);
+      this.passwordInputBackgroundText.setVisible(false);
+      this.passwordSubmitButton.setVisible(false);
+      this.confirmButton.setVisible(true);
+
       if (this.currentPage < this.numPages) {
         this.currentPage++;
         this.generateRoomButtons();
-        if (this.currentPage > 1) {
-          this.decreasePageButton.setVisible(true);
-        }
-        if (this.currentPage == this.numPages) {
-          this.increasePageButton.setVisible(false);
-        }
       }
     });
     this.decreasePageButton.on("pointerdown", () => {
-      passwordInput.setVisible(false);
-      passwordInputBackground.setVisible(false);
+      this.passwordInput.setVisible(false);
+      this.passwordInputBackground.setVisible(false);
+      this.passwordInputBackgroundText.setVisible(false);
+      this.passwordSubmitButton.setVisible(false);
+      this.confirmButton.setVisible(true);
       if (this.currentPage > 1) {
         this.currentPage--;
         this.generateRoomButtons();
-        if (this.currentPage == 1) {
-          this.decreasePageButton.setVisible(false);
-        }
-        if (this.currentPage < this.numPages) {
-          this.increasePageButton.setVisible(true);
-        }
       }
     });
     this.confirmButton.on("pointerdown", () => {
@@ -266,19 +295,29 @@ export class JoinRoom extends Scene {
       console.log(this.roomButtonsArr);
       console.log(this.selectedRoom);
       if (this.selectedRoom != undefined) {
-        if (this.roomList.value[this.selectedRoom].password) {
-          passwordInput.setVisible(true);
-          passwordInputBackground.setVisible(true);
-        } else {
-          this.$bus.emit("joinroom", {
-            roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
-          });
-        }
+        this.$bus.emit("joinroom", {
+          roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
+        });
+      }
+    });
+    this.passwordSubmitButton.on("pointerdown", () => {
+      console.log(this.roomList);
+      console.log(this.roomButtonsArr);
+      console.log(this.selectedRoom);
+      if (this.selectedRoom != undefined) {
+        this.$bus.emit("joinroom", {
+          roomKey: this.roomButtonsArr[this.selectedRoom].roomKey,
+          password: this.passwordInput.text,
+        });
       }
     });
     this.syncButton.on("pointerdown", () => {
-      passwordInput.setVisible(false);
-      passwordInputBackground.setVisible(false);
+      this.passwordInput.setVisible(false);
+      this.passwordInputBackground.setVisible(false);
+      this.passwordInputBackgroundText.setVisible(false);
+      this.passwordSubmitButton.setVisible(false);
+      this.confirmButton.setFrame(1).setVisible(true).disableInteractive();
+      this.generateRoomButtons();
       this.$bus.emit("refreshrooms");
     });
     // refresh room list
@@ -291,16 +330,37 @@ export class JoinRoom extends Scene {
     let onNewRoomList = function () {
       this.generateRoomButtons();
     }.bind(this);
-
+    let onError = function (args) {
+      if (args.reason == "disconnect") {
+        this.scene.wake("Error");
+        this.scene.start("MainMenu");
+      }
+      if (args.reason == "incorrect") {
+        this.scene.wake("Error");
+      }
+      if (args.reason == "room-full") {
+        this.passwordInput.setVisible(false);
+        this.passwordInputBackground.setVisible(false);
+        this.passwordInputBackgroundText.setVisible(false);
+        this.passwordSubmitButton.setVisible(false);
+        this.confirmButton.setFrame(1).setVisible(true).disableInteractive();
+        this.generateRoomButtons();
+        this.$bus.emit("refreshrooms");
+        this.scene.wake("Error");
+      }
+    }.bind(this);
     let onGameState = function () {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
       this.registry.set("minigamesTitle2", this.minigamesTitle2.x);
       this.scene.start("RoomLobby");
     }.bind(this);
     this.$bus.on("gamestate", onGameState);
+    this.$bus.on("error", onError);
     this.$bus.on("newroomlist", onNewRoomList);
+
     this.events.on("shutdown", () => {
       this.$bus.off("gamestate", onGameState);
+      this.$bus.off("error", onError);
       this.$bus.off("newroomlist", onNewRoomList);
     });
   }
