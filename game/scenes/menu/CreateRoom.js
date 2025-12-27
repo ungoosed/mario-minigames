@@ -142,7 +142,7 @@ export class CreateRoom extends Scene {
 
     this.backButton = this.add.image(
       UI_CONFIG.BACK_BUTTON_POSITION.x,
-      365,
+      UI_CONFIG.BACK_BUTTON_POSITION.y,
       "back-button",
     );
     this.increasePlayers = this.add.image(156 - 65, 297, "right-arrow-button");

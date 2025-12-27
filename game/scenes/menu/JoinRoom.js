@@ -196,7 +196,7 @@ export class JoinRoom extends Scene {
     this.confirmButton = makeHoverable(
       this.add.image(
         UI_CONFIG.CONFIRM_BUTTON_POSITION.x,
-        UI_CONFIG.CONFIRM_BUTTON_POSITION.y,
+        360,
         "join-button-confirm",
       ),
     )
