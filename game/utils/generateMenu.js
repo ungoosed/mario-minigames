@@ -5,6 +5,7 @@
 // onStart():
 
 import makeHoverable from "./makeHoverable";
+import { UI_CONFIG } from "./constants";
 
 // }
 export default function generateMenu(scene, config, onStart) {
@@ -27,18 +28,30 @@ export default function generateMenu(scene, config, onStart) {
   const interactive = scene.add.group();
   for (let i = 0; i < config.inputs.length; i++) {
     if (config.inputs[i].type == "picker") {
-      let background = scene.add.image(128, 230 + i * 30, "text-input");
+      let background = scene.add.image(
+        UI_CONFIG.CREATE_BUTTON_POSITION.x,
+        230 + i * 30,
+        "text-input",
+      );
       let left = scene.add
-        .image(49, 230 + i * 30, "left-arrow-button")
+        .image(
+          UI_CONFIG.PAGE_NAVIGATION_BUTTONS.DECREASE_PAGE.x,
+          230 + i * 30,
+          "left-arrow-button",
+        )
         .setVisible(false);
       makeHoverable(left);
       lefts.push(left);
-      let right = scene.add.image(205, 230 + i * 30, "right-arrow-button");
+      let right = scene.add.image(
+        UI_CONFIG.PAGE_NAVIGATION_BUTTONS.INCREASE_PAGE.x,
+        230 + i * 30,
+        "right-arrow-button",
+      );
       makeHoverable(right);
       rights.push(right);
       obj["inputs"][i] = 0;
       let label = scene.add
-        .bitmapText(128, 230 + i * 30, "ds")
+        .bitmapText(UI_CONFIG.CREATE_BUTTON_POSITION.x, 230 + i * 30, "ds")
         .setOrigin(0.5, 0.5)
         .setText(config.inputs[i].labels[obj["inputs"][i]]);
       labels.push(label);
@@ -83,7 +96,9 @@ export default function generateMenu(scene, config, onStart) {
   };
 
   let start = makeHoverable(
-    scene.add.image(128, 355, "start-button").on("pointerdown", onStart),
+    scene.add
+      .image(UI_CONFIG.CREATE_BUTTON_POSITION.x, 355, "start-button")
+      .on("pointerdown", onStart),
   );
   interactive.add(start);
   obj.start = start;

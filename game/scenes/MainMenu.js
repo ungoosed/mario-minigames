@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import makeHoverable from "../utils/makeHoverable";
+import { UI_CONFIG } from "~/game/utils/constants";
 export class MainMenu extends Scene {
   constructor() {
     super("MainMenu");
@@ -30,8 +31,16 @@ export class MainMenu extends Scene {
       68,
       "minigames-rainbow",
     );
-    this.createButton = this.add.image(128, 234, "create-button");
-    this.joinButton = this.add.image(128, 310, "join-button");
+    this.createButton = this.add.image(
+      UI_CONFIG.CREATE_BUTTON_POSITION.x,
+      UI_CONFIG.CREATE_BUTTON_POSITION.y,
+      "create-button",
+    );
+    this.joinButton = this.add.image(
+      UI_CONFIG.JOIN_BUTTON_POSITION.x,
+      UI_CONFIG.JOIN_BUTTON_POSITION.y,
+      "join-button",
+    );
     const buttons = [this.createButton, this.joinButton];
     buttons.forEach((button) => {
       makeHoverable(button);

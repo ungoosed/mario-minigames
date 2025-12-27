@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import makeHoverable from "~/game/utils/makeHoverable";
+import { UI_CONFIG } from "~/game/utils/constants";
 import { useNuxtApp } from "#app";
 
 export class CreateRoom extends Scene {
@@ -48,89 +49,111 @@ export class CreateRoom extends Scene {
       68,
       "minigames-rainbow",
     );
-    const roomNameInput = new InputText(this, 128, 231, 125, 35, {
-      x: 0,
-      y: 0,
-      width: undefined,
-      height: undefined,
+    const roomNameInput = new InputText(
+      this,
+      UI_CONFIG.ROOM_NAME_INPUT_POSITION.x,
+      UI_CONFIG.ROOM_NAME_INPUT_POSITION.y,
+      125,
+      35,
+      {
+        x: 0,
+        y: 0,
+        width: undefined,
+        height: undefined,
 
-      type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
+        type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
 
-      // Element properties
-      id: "newRoomName",
-      text: undefined,
-      maxLength: undefined,
-      minLength: undefined,
-      placeholder: undefined,
-      tooltip: undefined,
-      readOnly: false,
-      spellCheck: false,
-      autoComplete: "off",
+        // Element properties
+        id: "newRoomName",
+        text: undefined,
+        maxLength: undefined,
+        minLength: undefined,
+        placeholder: undefined,
+        tooltip: undefined,
+        readOnly: false,
+        spellCheck: false,
+        autoComplete: "off",
 
-      // Style properties
-      align: "center",
-      paddingLeft: undefined,
-      paddingRight: undefined,
-      paddingTop: undefined,
-      paddingBottom: undefined,
-      fontFamily: undefined,
-      fontSize: undefined,
-      color: "#ffffff",
-      border: 0,
-      backgroundColor: "transparent",
-      borderColor: "transparent",
-      borderRadius: undefined,
-      outline: "none",
-      direction: "ltr",
+        // Style properties
+        align: "center",
+        paddingLeft: undefined,
+        paddingRight: undefined,
+        paddingTop: undefined,
+        paddingBottom: undefined,
+        fontFamily: undefined,
+        fontSize: undefined,
+        color: "#ffffff",
+        border: 0,
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        borderRadius: undefined,
+        outline: "none",
+        direction: "ltr",
 
-      selectAll: false,
-    });
-    const passwordInput = new InputText(this, 185, 298, 125, 35, {
-      x: 0,
-      y: 0,
-      width: undefined,
-      height: undefined,
+        selectAll: false,
+      },
+    );
+    const passwordInput = new InputText(
+      this,
+      UI_CONFIG.PASSWORD_INPUT_POSITION.x,
+      UI_CONFIG.PASSWORD_INPUT_POSITION.y,
+      125,
+      35,
+      {
+        x: 0,
+        y: 0,
+        width: undefined,
+        height: undefined,
 
-      type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
+        type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
 
-      // Element properties
-      id: "newRoomName",
-      text: undefined,
-      maxLength: undefined,
-      minLength: undefined,
-      placeholder: undefined,
-      tooltip: undefined,
-      readOnly: false,
-      spellCheck: false,
-      autoComplete: "off",
+        // Element properties
+        id: "newRoomName",
+        text: undefined,
+        maxLength: undefined,
+        minLength: undefined,
+        placeholder: undefined,
+        tooltip: undefined,
+        readOnly: false,
+        spellCheck: false,
+        autoComplete: "off",
 
-      // Style properties
-      align: "center",
-      paddingLeft: undefined,
-      paddingRight: undefined,
-      paddingTop: undefined,
-      paddingBottom: undefined,
-      fontFamily: undefined,
-      fontSize: undefined,
-      color: "#ffffff",
-      border: 0,
-      backgroundColor: "transparent",
-      borderColor: "transparent",
-      borderRadius: undefined,
-      outline: "none",
-      direction: "ltr",
+        // Style properties
+        align: "center",
+        paddingLeft: undefined,
+        paddingRight: undefined,
+        paddingTop: undefined,
+        paddingBottom: undefined,
+        fontFamily: undefined,
+        fontSize: undefined,
+        color: "#ffffff",
+        border: 0,
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        borderRadius: undefined,
+        outline: "none",
+        direction: "ltr",
 
-      selectAll: false,
-    });
+        selectAll: false,
+      },
+    );
     this.add.existing(roomNameInput);
     this.add.existing(passwordInput);
 
-    this.backButton = this.add.image(232, 365, "back-button");
+    this.backButton = this.add.image(
+      UI_CONFIG.BACK_BUTTON_POSITION.x,
+      365,
+      "back-button",
+    );
     this.increasePlayers = this.add.image(156 - 65, 297, "right-arrow-button");
     this.decreasePlayers = this.add
       .image(97 - 65, 297, "left-arrow-button")
       .setVisible(false);
-    this.confirmButton = this.add.image(128, 346, "create-button-confirm");
+    this.confirmButton = this.add.image(
+      UI_CONFIG.CONFIRM_BUTTON_POSITION.x,
+      UI_CONFIG.CONFIRM_BUTTON_POSITION.y,
+      "create-button-confirm",
+    );
 
     const buttons = [
       this.backButton,

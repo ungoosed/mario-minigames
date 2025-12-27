@@ -1,8 +1,10 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
+import { UI_CONFIG } from "~/game/utils/constants";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import { useNuxtApp } from "#app";
 import { MainMenu } from "../MainMenu";
+
 export class JoinRoom extends Scene {
   constructor() {
     super("JoinRoom");
@@ -62,7 +64,7 @@ export class JoinRoom extends Scene {
       let maxUsers = roomData?.maxUsers;
       let formattedRoomKey;
       if (roomKey.length > 18) {
-        formattedRoomKey = roomKey.slice(0, 16) + " ...";
+        formattedRoomKey = roomKey.slice(0, 16) + "...";
       } else {
         formattedRoomKey = roomKey;
       }
@@ -84,7 +86,7 @@ export class JoinRoom extends Scene {
         .setVisible(hasPassword ? false : true);
 
       image.on("pointerover", () => {
-        name.setPosition(hasPassword ? 14 : 31, 208 + i * 34);
+        name.setPosition(hasPassword ? 14 : 31, 209 + i * 34);
         users.setPosition(207, 210 + i * 34);
         lockIcon.setPosition(14, 208 + i * 34);
       });
@@ -121,7 +123,7 @@ export class JoinRoom extends Scene {
       });
       image.on("pointerout", () => {
         lockIcon.setPosition(12, 206 + i * 34);
-        name.setPosition(hasPassword ? 12 : 29, 206 + i * 34);
+        name.setPosition(hasPassword ? 12 : 29, 207 + i * 34);
         users.setPosition(205, 208 + i * 34);
       });
       this.roomButtonsArr.push({
@@ -184,80 +186,133 @@ export class JoinRoom extends Scene {
     this.add.image(144, 170, "dialogue3");
 
     // create buttons
-    this.backButton = makeHoverable(this.add.image(232, 360, "back-button"));
+    this.backButton = makeHoverable(
+      this.add.image(
+        UI_CONFIG.BACK_BUTTON_POSITION.x,
+        UI_CONFIG.BACK_BUTTON_POSITION.y,
+        "back-button",
+      ),
+    );
     this.confirmButton = makeHoverable(
-      this.add.image(128, 358, "join-button-confirm"),
+      this.add.image(
+        UI_CONFIG.CONFIRM_BUTTON_POSITION.x,
+        UI_CONFIG.CONFIRM_BUTTON_POSITION.y,
+        "join-button-confirm",
+      ),
     )
       .setFrame(1)
       .disableInteractive();
 
     this.syncButton = makeHoverable(
-      this.add.image(6, 358, "sync-button").setOrigin(0, 0.5),
+      this.add
+        .image(
+          UI_CONFIG.SYNC_BUTTON_POSITION.x,
+          UI_CONFIG.SYNC_BUTTON_POSITION.y,
+          "sync-button",
+        )
+        .setOrigin(0, 0.5),
     );
     // create page navigation buttons
     this.increasePageButton = makeHoverable(
-      this.add.image(205, 320, "right-arrow-button"),
+      this.add.image(
+        UI_CONFIG.PAGE_NAVIGATION_BUTTONS.INCREASE_PAGE.x,
+        UI_CONFIG.PAGE_NAVIGATION_BUTTONS.INCREASE_PAGE.y,
+        "right-arrow-button",
+      ),
     );
     this.decreasePageButton = makeHoverable(
-      this.add.image(48, 320, "left-arrow-button").setVisible(false),
+      this.add
+        .image(
+          UI_CONFIG.PAGE_NAVIGATION_BUTTONS.DECREASE_PAGE.x,
+          UI_CONFIG.PAGE_NAVIGATION_BUTTONS.DECREASE_PAGE.y,
+          "left-arrow-button",
+        )
+        .setVisible(false),
     );
-    this.pageTextBackground = this.add.image(128, 320, "text-input");
-    this.numPagesText = this.add.image(112, 322, "num-pages-text");
+    this.pageTextBackground = this.add.image(
+      UI_CONFIG.PAGE_TEXT_BACKGROUND.x,
+      UI_CONFIG.PAGE_TEXT_BACKGROUND.y,
+      "text-input",
+    );
+    this.numPagesText = this.add.image(
+      UI_CONFIG.NUM_PAGES_TEXT.x,
+      UI_CONFIG.NUM_PAGES_TEXT.y,
+      "num-pages-text",
+    );
     this.pageNumberTracker = this.add.bitmapText(
-      143,
-      314,
+      UI_CONFIG.PAGE_NUMBER_TRACKER.x,
+      UI_CONFIG.PAGE_NUMBER_TRACKER.y,
       "ds",
       this.currentPage + "/" + this.numPages,
     );
     // password stuff
     this.passwordInputBackground = this.add
-      .image(114, 367 - 18, "text-input")
+      .image(
+        UI_CONFIG.PASSWORD_INPUT_BACKGROUND.x,
+        UI_CONFIG.PASSWORD_INPUT_BACKGROUND.y,
+        "text-input",
+      )
       .setOrigin(0.5, 0)
       .setVisible(false);
     this.passwordInputBackgroundText = this.add
-      .image(114, 336, "password-text")
+      .image(
+        UI_CONFIG.PASSWORD_INPUT_BACKGROUND_TEXT.x,
+        UI_CONFIG.PASSWORD_INPUT_BACKGROUND_TEXT.y,
+        "password-text",
+      )
       .setOrigin(0.5, 0)
       .setVisible(false);
     this.passwordSubmitButton = makeHoverable(
-      this.add.image(193, 361, "right-arrow-button"),
+      this.add.image(
+        UI_CONFIG.PASSWORD_SUBMIT_BUTTON.x,
+        UI_CONFIG.PASSWORD_SUBMIT_BUTTON.y,
+        "right-arrow-button",
+      ),
     ).setVisible(false);
-    this.passwordInput = new InputText(this, 114, 367, 125, 35, {
-      x: 0,
-      y: 0,
-      width: undefined,
-      height: undefined,
+    this.passwordInput = new InputText(
+      this,
+      UI_CONFIG.PASSWORD_INPUT_BACKGROUND.x,
+      UI_CONFIG.PASSWORD_INPUT_BACKGROUND.y + 18,
+      125,
+      35,
+      {
+        x: 0,
+        y: 0,
+        width: undefined,
+        height: undefined,
 
-      type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
+        type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
 
-      // Element properties
-      id: "newRoomName",
-      text: undefined,
-      maxLength: undefined,
-      minLength: undefined,
-      placeholder: undefined,
-      tooltip: undefined,
-      readOnly: false,
-      spellCheck: false,
-      autoComplete: "off",
+        // Element properties
+        id: "newRoomName",
+        text: undefined,
+        maxLength: undefined,
+        minLength: undefined,
+        placeholder: undefined,
+        tooltip: undefined,
+        readOnly: false,
+        spellCheck: false,
+        autoComplete: "off",
 
-      // Style properties
-      align: "center",
-      paddingLeft: undefined,
-      paddingRight: undefined,
-      paddingTop: undefined,
-      paddingBottom: undefined,
-      fontFamily: undefined,
-      fontSize: undefined,
-      color: "#ffffff",
-      border: 0,
-      backgroundColor: "transparent",
-      borderColor: "transparent",
-      borderRadius: undefined,
-      outline: "none",
-      direction: "ltr",
+        // Style properties
+        align: "center",
+        paddingLeft: undefined,
+        paddingRight: undefined,
+        paddingTop: undefined,
+        paddingBottom: undefined,
+        fontFamily: undefined,
+        fontSize: undefined,
+        color: "#ffffff",
+        border: 0,
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        borderRadius: undefined,
+        outline: "none",
+        direction: "ltr",
 
-      selectAll: false,
-    });
+        selectAll: false,
+      },
+    );
     this.add.existing(this.passwordInput);
 
     //set click callbacks

@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
+import { UI_CONFIG } from "~/game/utils/constants";
 
 export class SetProfile extends Scene {
   constructor() {
@@ -33,7 +34,11 @@ export class SetProfile extends Scene {
       "minigames-rainbow",
     );
     this.add.image(128, 213, "text-input").setOrigin(0.5, 0);
-    this.continueButton = this.add.image(128, 360, "continue-button");
+    this.continueButton = this.add.image(
+      UI_CONFIG.CREATE_BUTTON_POSITION.x,
+      UI_CONFIG.BACK_BUTTON_POSITION.y,
+      "continue-button",
+    );
     makeHoverable(this.continueButton);
     this.continueButton.on("pointerdown", () => {
       this.registry.set("minigamesTitle1", this.minigamesTitle1.x);
@@ -42,43 +47,50 @@ export class SetProfile extends Scene {
       this.scene.start("MainMenu");
     });
     this.add.text(50, 170, "enter your name here");
-    const nameInput = new InputText(this, 128, 231, 125, 35, {
-      x: 0,
-      y: 0,
-      width: undefined,
-      height: undefined,
+    const nameInput = new InputText(
+      this,
+      UI_CONFIG.ROOM_NAME_INPUT_POSITION.x,
+      UI_CONFIG.ROOM_NAME_INPUT_POSITION.y,
+      125,
+      35,
+      {
+        x: 0,
+        y: 0,
+        width: undefined,
+        height: undefined,
 
-      type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
+        type: "text", // 'text'|'password'|'textarea'|'number'|'color'|...
 
-      // Element properties
-      id: "nameInput",
-      text: undefined,
-      maxLength: undefined,
-      minLength: undefined,
-      placeholder: undefined,
-      tooltip: undefined,
-      readOnly: false,
-      spellCheck: false,
-      autoComplete: "off",
+        // Element properties
+        id: "nameInput",
+        text: undefined,
+        maxLength: undefined,
+        minLength: undefined,
+        placeholder: undefined,
+        tooltip: undefined,
+        readOnly: false,
+        spellCheck: false,
+        autoComplete: "off",
 
-      // Style properties
-      align: "center",
-      paddingLeft: undefined,
-      paddingRight: undefined,
-      paddingTop: undefined,
-      paddingBottom: undefined,
-      fontFamily: undefined,
-      fontSize: undefined,
-      color: "#ffffff",
-      border: 0,
-      backgroundColor: "transparent",
-      borderColor: "transparent",
-      borderRadius: undefined,
-      outline: "none",
-      direction: "ltr",
+        // Style properties
+        align: "center",
+        paddingLeft: undefined,
+        paddingRight: undefined,
+        paddingTop: undefined,
+        paddingBottom: undefined,
+        fontFamily: undefined,
+        fontSize: undefined,
+        color: "#ffffff",
+        border: 0,
+        backgroundColor: "transparent",
+        borderColor: "transparent",
+        borderRadius: undefined,
+        outline: "none",
+        direction: "ltr",
 
-      selectAll: false,
-    });
+        selectAll: false,
+      },
+    );
     this.add.existing(nameInput);
   }
   update() {

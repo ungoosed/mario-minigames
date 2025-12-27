@@ -4,6 +4,7 @@
 // display all current users, max users, etc.
 import makeHoverable from "~/game/utils/makeHoverable";
 import { Scene } from "phaser";
+import { UI_CONFIG } from "~/game/utils/constants";
 
 export class RoomLobby extends Scene {
   constructor() {
@@ -58,7 +59,11 @@ export class RoomLobby extends Scene {
       "minigames-rainbow",
     );
 
-    this.backButton = this.add.image(232, 360, "back-button");
+    this.backButton = this.add.image(
+      UI_CONFIG.BACK_BUTTON_POSITION.x,
+      UI_CONFIG.BACK_BUTTON_POSITION.y,
+      "back-button",
+    );
     makeHoverable(this.backButton);
     this.backButton.on("pointerdown", () => {
       this.scene.start("MainMenu");
@@ -119,6 +124,7 @@ export class RoomLobby extends Scene {
       if (this.gameState.value.data.game == "SelectGame") {
         this.scene.start("SelectGame");
       }
+      console.log(this.gameState.value);
     }.bind(this);
     this.$bus.on("gamestate", onGameState);
     this.$bus.on("error", onError);

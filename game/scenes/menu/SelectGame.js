@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 const minigames = import.meta.glob("~/game/scenes/minigames/*.js");
 import makeHoverable from "~/game/utils/makeHoverable";
+import { UI_CONFIG } from "~/game/utils/constants";
 export class SelectGame extends Scene {
   constructor() {
     super("SelectGame");
@@ -15,7 +16,7 @@ export class SelectGame extends Scene {
     for (let i = 0; i < this.gameState.value.users?.length; i++) {
       this.add
         .bitmapText(
-          128,
+          UI_CONFIG.CREATE_BUTTON_POSITION.x,
           30 + i * 15,
           "dense",
           "name: " + this.gameState.value.users[i]?.name,
@@ -146,18 +147,13 @@ export class SelectGame extends Scene {
       updateCategories();
       updateThumbnails();
       if (this.gameState.value.data.game != "SelectGame") {
-        minigames[
-          `/game/scenes/minigames/${this.gameState.value.data.game
-            .replace(/-./g, (match) => match.charAt(1).toUpperCase())
-            .replace(/^./, (match) => match.toUpperCase())}.js`
-        ]().then((module) => {
-          this.scene.add(this.gameState.value.data?.game, module.default);
-          this.scene.start(this.gameState.value.data?.game);
+        this.scene.start("GameSettings", {
+          game: this.gameState.value.data.game,
         });
       }
     }.bind(this);
     let onError = function () {
-      this.scene.start("MainMenu");
+      this.scene.wake("Error");
     }.bind(this);
     this.$bus.on("gamestate", onGameState);
     this.$bus.on("try", onTry);
