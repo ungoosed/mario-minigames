@@ -4,7 +4,7 @@
 // display all current users, max users, etc.
 import makeHoverable from "~/game/utils/makeHoverable";
 import { Scene } from "phaser";
-import { UI_CONFIG } from "~/game/utils/constants";
+import { UI_CONFIG } from "~/game/constants/constants";
 
 export class RoomLobby extends Scene {
   constructor() {

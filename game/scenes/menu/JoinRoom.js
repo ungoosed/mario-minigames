@@ -1,6 +1,6 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
-import { UI_CONFIG } from "~/game/utils/constants";
+import { UI_CONFIG } from "~/game/constants/constants";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import { useNuxtApp } from "#app";
 import { MainMenu } from "../MainMenu";
@@ -18,7 +18,7 @@ export class JoinRoom extends Scene {
   }
 
   generateRoomButtons() {
-    this.selectedRoom = 0;
+    this.selectedRoom = undefined;
     this.roomButtonsArr.length = 0;
     this.roomButtonsGroup.clear(true, true);
     this.confirmButton.setVisible(true).setFrame(1).disableInteractive();
@@ -92,6 +92,8 @@ export class JoinRoom extends Scene {
       });
       image.on("pointerdown", () => {
         if (this.selectedRoom == i) {
+          console.log(i);
+          console.log(this.selectedRoom);
           this.selectedRoom = undefined;
           this.confirmButton.setFrame(1).disableInteractive().setVisible(true);
           name.setText(formattedRoomKey);

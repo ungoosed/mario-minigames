@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 import makeHoverable from "~/game/utils/makeHoverable";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
-import { UI_CONFIG } from "~/game/utils/constants";
+import { UI_CONFIG } from "~/game/constants/constants";
 
 export class SetProfile extends Scene {
   constructor() {

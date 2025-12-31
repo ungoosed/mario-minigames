@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 import InputText from "phaser3-rex-plugins/plugins/inputtext.js";
 import makeHoverable from "~/game/utils/makeHoverable";
-import { UI_CONFIG } from "~/game/utils/constants";
+import { UI_CONFIG } from "~/game/constants/constants";
 import { useNuxtApp } from "#app";
 
 export class CreateRoom extends Scene {

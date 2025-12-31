@@ -153,6 +153,10 @@ export class Preloader extends Scene {
       frameWidth: 80,
       frameHeight: 48,
     });
+    this.load.spritesheet("blank-button-small", "blank-button-small.png", {
+      frameWidth: 88,
+      frameHeight: 27,
+    });
   }
 
   create() {

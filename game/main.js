@@ -7,6 +7,7 @@ import { RoomLobby } from "./scenes/menu/RoomLobby";
 import { SelectGame } from "./scenes/menu/SelectGame";
 import { SetProfile } from "./scenes/menu/SetProfile";
 import { GameSettings } from "./scenes/menu/GameSettings";
+import { MinigameTemplate } from "./scenes/minigames/MinigameTemplate";
 import { Error } from "./scenes/Error";
 export const createGame = (config = {}) =>
   new Phaser.Game({
@@ -50,6 +51,7 @@ export const createGame = (config = {}) =>
       SetProfile,
       SelectGame,
       GameSettings,
+      MinigameTemplate,
       Error,
     ],
   });

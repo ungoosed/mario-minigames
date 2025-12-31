@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 const minigames = import.meta.glob("~/game/scenes/minigames/*.js");
 import makeHoverable from "~/game/utils/makeHoverable";
-import { UI_CONFIG } from "~/game/utils/constants";
+import { UI_CONFIG } from "~/game/constants/constants";
 export class SelectGame extends Scene {
   constructor() {
     super("SelectGame");

@@ -1,6 +1,6 @@
 import { Scene } from "phaser";
 import makeHoverable from "../utils/makeHoverable";
-import { UI_CONFIG } from "~/game/utils/constants";
+import { UI_CONFIG } from "~/game/constants/constants";
 export class Error extends Scene {
   constructor() {
     super("Error");

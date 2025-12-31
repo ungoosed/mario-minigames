@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import generateHand from "~/game/utils/generateHand";
+import generateHand from "~/game/utils/picture-poker/generateHand";
 import generateMenu from "~/game/utils/generateMenu";
 import loadAssets from "~/game/utils/loadAssets";
 export default class PicturePoker extends Scene {
@@ -25,12 +25,12 @@ export default class PicturePoker extends Scene {
     this.load.start();
     this.load.once("complete", () => {
       this.$bus.emit("action", { type: "ready" });
-      this.add.image(0, 0, "casino-background").setOrigin(0, 0).setDepth(-1),
+      (this.add.image(0, 0, "casino-background").setOrigin(0, 0).setDepth(-1),
         this.add
           .image(0, 192, "casino-background")
           .setOrigin(0, 0)
           .setDepth(-1),
-        (this.cards = []);
+        (this.cards = []));
       for (let i = 0; i < 5; i++) {
         let card = this.add.sprite(20 + i * 20, 300);
 
