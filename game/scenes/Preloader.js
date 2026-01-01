@@ -26,7 +26,12 @@ export class Preloader extends Scene {
     this.load.setPath("assets/misc");
     this.load.image("lock-icon", "lock-icon.png");
 
+    //menu assets
     this.load.setPath("assets/menu");
+    this.load.image("yoshi-label-large", "yoshi-label-large.png");
+    this.load.image("mario-label-large", "mario-label-large.png");
+    this.load.image("wario-label-large", "wario-label-large.png");
+    this.load.image("luigi-label-large", "luigi-label-large.png");
 
     this.load.image("menu-background", "menu-background.png");
     this.load.image("error-background", "error-background.png");

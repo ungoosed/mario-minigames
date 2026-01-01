@@ -62,11 +62,11 @@ export class MinigameTemplate extends Scene {
         );
       });
     }
-    this.endButton = this.increaseButtons[i] = makeHoverable(
-      this.add.image(50, 90, "blank-button-small"),
+    this.endButton = makeHoverable(
+      this.add.image(200, 90, "blank-button-small"),
     );
     let endText = this.add
-      .bitmapText(50, 91, "ds", this.gameState.value.users[i].name)
+      .bitmapText(200, 91, "ds", "end game")
       .setOrigin(0.5, 1);
 
     //transition to results screen
@@ -82,14 +82,15 @@ export class MinigameTemplate extends Scene {
     });
     let onGameState = function () {
       if (this.gameState.value.data.hasEnded) {
-        this.scene.start("results", {
-          scores: this.scores,
+        this.scene.start("Results", {
+          results: this.calculateResults(),
           game: this.gameState.value.data.game,
         });
       }
     }.bind(this);
     let onTry = function (args) {
       if (args.data.type === "endgame") {
+        this.gameState.value.data.results = this.calculateResults();
         this.$bus.emit("update", this.gameState.value.data);
       }
     }.bind(this);
@@ -97,6 +98,24 @@ export class MinigameTemplate extends Scene {
     this.$bus.on("try", onTry);
     this.$bus.on("error", onError);
     this.$bus.on("gamestate", onGameState);
+
+    this.events.on("shutdown", () => {
+      this.$bus.off("error", onError);
+      this.$bus.off("try", onTry);
+      this.$bus.off("gamestate", onGameState);
+    });
   }
-  update() {}
+  calculateResults() {
+    let results = [];
+    results[0] = this.gameState.value.users[0].id;
+    for (let i = 1; i < this.scores.length; i++) {
+      //sort results into order
+      if (results[0].score < this.scores[i]) {
+        results.unshift(this.gameState.value.users[i].id);
+      } else {
+        results.push(this.gameState.value.users[i].id);
+      }
+    }
+    return results;
+  }
 }

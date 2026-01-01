@@ -166,4 +166,9 @@ export class SelectGame extends Scene {
     });
   }
   update() {}
+  drawPlayerLabels() {
+    for (const player of this.gameState.value.users) {
+      //draw label based on pfp, colour, and name
+    }
+  }
 }

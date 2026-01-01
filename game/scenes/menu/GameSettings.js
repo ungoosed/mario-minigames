@@ -17,6 +17,8 @@ export class GameSettings extends Scene {
     this.game = args.game;
     this.rounds = 5;
     this.points = 25;
+    this.gameState.value.data.hasBegun = false;
+    this.gameState.value.data.hasEnded = false;
   }
 
   create() {

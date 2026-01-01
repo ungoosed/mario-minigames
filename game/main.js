@@ -8,6 +8,7 @@ import { SelectGame } from "./scenes/menu/SelectGame";
 import { SetProfile } from "./scenes/menu/SetProfile";
 import { GameSettings } from "./scenes/menu/GameSettings";
 import { MinigameTemplate } from "./scenes/minigames/MinigameTemplate";
+import { Results } from "./scenes/menu/Results";
 import { Error } from "./scenes/Error";
 export const createGame = (config = {}) =>
   new Phaser.Game({
@@ -52,6 +53,7 @@ export const createGame = (config = {}) =>
       SelectGame,
       GameSettings,
       MinigameTemplate,
+      Results,
       Error,
     ],
   });
