@@ -72,6 +72,7 @@ export class MinigameTemplate extends Scene {
     //transition to results screen
     this.endButton.on("pointerdown", () => {
       if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.gameState.value.users[0].points += 100;
         this.gameState.value.data.hasEnded = true;
         this.$bus.emit("update", this.gameState.value.data);
       } else {
@@ -81,6 +82,7 @@ export class MinigameTemplate extends Scene {
       }
     });
     let onGameState = function () {
+      console.log(this.gameState.value.users);
       if (this.gameState.value.data.hasEnded) {
         this.scene.start("Results", {
           results: this.calculateResults(),
@@ -89,7 +91,7 @@ export class MinigameTemplate extends Scene {
       }
     }.bind(this);
     let onTry = function (args) {
-      if (args.data.type === "endgame") {
+      if (args.data.type == "endgame") {
         this.gameState.value.data.results = this.calculateResults();
         this.$bus.emit("update", this.gameState.value.data);
       }

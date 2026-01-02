@@ -61,5 +61,4 @@ export class Results extends Scene {
       this.$bus.off("gamestate", onGameState);
     });
   }
-  update() {}
 }

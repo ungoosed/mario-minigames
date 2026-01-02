@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 const minigames = import.meta.glob("~/game/scenes/minigames/*.js");
 import makeHoverable from "~/game/utils/makeHoverable";
+import getPlacements from "~/game/utils/getPlacements";
 import { UI_CONFIG } from "~/game/constants/constants";
 export class SelectGame extends Scene {
   constructor() {
@@ -13,22 +14,13 @@ export class SelectGame extends Scene {
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(0, 150, "dialogue-background1").setOrigin(0, 0);
-    for (let i = 0; i < this.gameState.value.users?.length; i++) {
-      this.add
-        .bitmapText(
-          UI_CONFIG.CREATE_BUTTON_POSITION.x,
-          30 + i * 15,
-          "dense",
-          "name: " + this.gameState.value.users[i]?.name,
-        )
-        .setOrigin(0.5, 0);
-    }
-    const categories = ["action", "puzzle", "table", "variety"];
 
+    const categories = ["action", "puzzle", "table", "variety"];
     const actionGames = ["picture-poker", "bob-omb-blast"];
     const puzzleGames = [];
     const tableGames = [];
     const varietyGames = [];
+
     let allGames = [actionGames, puzzleGames, tableGames, varietyGames];
     let gamesButtons = [];
     //create thumbnails
@@ -123,7 +115,7 @@ export class SelectGame extends Scene {
     //run updates
     updateCategories();
     updateThumbnails();
-
+    this.drawPlayerLabels();
     let onTry = function (args) {
       if (
         args?.data?.type == "setcategory" &&
@@ -155,20 +147,48 @@ export class SelectGame extends Scene {
     let onError = function () {
       this.scene.wake("Error");
     }.bind(this);
+    //create and destroy events
     this.$bus.on("gamestate", onGameState);
     this.$bus.on("try", onTry);
     this.$bus.on("error", onError);
-
     this.events.on("shutdown", () => {
       this.$bus.off("gamestate", onGameState);
       this.$bus.off("try", onTry);
       this.$bus.off("error", onError);
     });
   }
-  update() {}
   drawPlayerLabels() {
-    for (const player of this.gameState.value.users) {
-      //draw label based on pfp, colour, and name
+    //IN PROGRESS
+    let placements = getPlacements(this.gameState.value.users);
+    // console.log(placements);
+    for (let i = 0; i < placements.length; i++) {
+      let labelID = "";
+      switch (i) {
+        case 0:
+          labelID = "mario-label-large";
+          break;
+        case 1:
+          labelID = "luigi-label-large";
+          break;
+        case 2:
+          labelID = "wario-label-large";
+          break;
+        case 3:
+          labelID = "yoshi-label-large";
+          break;
+      }
+      let x = 128 + (placements[i].placement - 1) * 10;
+      let y = (170 / (placements.length + 1)) * (i + 1);
+      this.add.image(x, y - 10, labelID).setOrigin(0.5, 0.5);
+      this.add
+        .bitmapText(x - 30, y - 10, "dense", this.gameState.value.users[i].name)
+        .setCharacterTint(0, -1, true, 0xffffff);
+      this.add.bitmapText(
+        x + 60,
+        y - 13,
+        "ds",
+        this.gameState.value.users[i].points,
+      );
     }
   }
 }
