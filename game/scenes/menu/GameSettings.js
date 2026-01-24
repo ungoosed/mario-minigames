@@ -5,7 +5,7 @@
 import makeHoverable from "~/game/utils/makeHoverable";
 import { Scene } from "phaser";
 import { UI_CONFIG } from "~/game/constants/constants";
-
+import initializeGameState from "~/game/utils/minigame-template/initializeGameState";
 export class GameSettings extends Scene {
   constructor() {
     super("GameSettings");
@@ -34,6 +34,7 @@ export class GameSettings extends Scene {
     this.startButton.on("pointerdown", () => {
       if (this.gameState.value.users[0].id == this.userData.value.id) {
         this.gameState.value.data.hasBegun = true;
+        initializeGameState(this.gameState);
         this.$bus.emit("update", this.gameState.value.data);
       } else {
         this.$bus.emit("action", { type: "startgame" });
@@ -96,6 +97,7 @@ export class GameSettings extends Scene {
         args.id == this.gameState.value.data.turn
       ) {
         this.gameState.value.data.hasBegun = true;
+        initializeGameState(this.gameState);
         this.$bus.emit("update", this.gameState.value.data);
       }
     }.bind(this);
