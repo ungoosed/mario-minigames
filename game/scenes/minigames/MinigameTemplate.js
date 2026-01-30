@@ -3,7 +3,6 @@ import generateHand from "~/game/utils/picture-poker/generateHand";
 import loadAssets from "~/game/utils/loadAssets";
 import makeHoverable from "~/game/utils/makeHoverable";
 import calculateResults from "~/game/utils/minigame-template/calculateResults";
-
 export class MinigameTemplate extends Scene {
   constructor() {
     super("MinigameTemplate");
@@ -41,20 +40,17 @@ export class MinigameTemplate extends Scene {
       let name = this.add
         .bitmapText(50, 51 + i * 30, "ds", this.gameState.value.users[i].name)
         .setOrigin(0.5, 1);
-      this.scoreTexts.push(
-        this.add
-          .bitmapText(
-            100,
-            150 + i * 30,
-            "ds",
-            this.gameState.value.users[i].name +
-              "'s score: " +
-              this.gameState.value.data.scores[
-                this.gameState.value.users[i].id
-              ],
-          )
-          .setOrigin(0.5, 1),
-      );
+      this.scoreTexts[i] = this.add
+        .bitmapText(
+          100,
+          150 + i * 30,
+          "ds",
+          this.gameState.value.users[i].name +
+            "'s score: " +
+            this.gameState.value.data.scores[this.gameState.value.users[i].id],
+        )
+        .setOrigin(0.5, 1);
+
       button.on("pointerover", () => {
         name.setPosition(50, 53 + i * 30);
       });
@@ -62,11 +58,22 @@ export class MinigameTemplate extends Scene {
         name.setPosition(50, 50 + i * 30);
       });
       button.on("pointerdown", () => {
-        this.$bus.emit("action", {
-          type: "add",
-          playerId: this.gameState.value.users[i].id,
-          amount: 25,
-        });
+        if (this.gameState.value.users[0].id == this.userData.value.id) {
+          this.handleAction({
+            id: this.userData.value.id,
+            data: {
+              type: "add",
+              playerId: this.gameState.value.users[i].id,
+              amount: 25,
+            },
+          });
+        } else {
+          this.$bus.emit("action", {
+            type: "add",
+            playerId: this.gameState.value.users[i].id,
+            amount: 25,
+          });
+        }
       });
     }
     this.endButton = makeHoverable(
@@ -79,9 +86,12 @@ export class MinigameTemplate extends Scene {
     //transition to results screen
     this.endButton.on("pointerdown", () => {
       if (this.gameState.value.users[0].id == this.userData.value.id) {
-        this.gameState.value.users[0].points += 100;
-        this.gameState.value.data.hasEnded = true;
-        this.$bus.emit("update", this.gameState.value.data);
+        this.handleAction({
+          id: this.userData.value.id,
+          data: {
+            type: "endgame",
+          },
+        });
       } else {
         this.$bus.emit("action", {
           type: "endgame",
@@ -90,12 +100,15 @@ export class MinigameTemplate extends Scene {
     });
     let onGameState = function () {
       if (this.gameState.value.data.hasEnded) {
+        let results = calculateResults(this.gameState);
+        this.cleanup();
         this.scene.start("Results", {
-          results: calculateResults(this.gameState),
+          results: results,
           game: this.gameState.value.data.game,
         });
       } else {
         for (let i = 0; i < this.gameState.value.users.length; i++) {
+          console.log(this.scoreTexts[i]?.active, this.scoreTexts[i]?.scene);
           this.scoreTexts[i].setText(
             this.gameState.value.users[i].name +
               "'s score: " +
@@ -107,15 +120,7 @@ export class MinigameTemplate extends Scene {
       }
     }.bind(this);
     let onTry = function (args) {
-      if (args.data.type == "endgame") {
-        this.gameState.value.data.results = calculateResults(this.gameState);
-        this.$bus.emit("update", this.gameState.value.data);
-      }
-      if (args.data.type == "add") {
-        this.gameState.value.data.scores[args.data.playerId] +=
-          args.data.amount;
-        this.$bus.emit("update", this.gameState.value.data);
-      }
+      this.handleAction(args);
     }.bind(this);
     let onError = function () {}.bind(this);
     this.$bus.on("try", onTry);
@@ -127,5 +132,20 @@ export class MinigameTemplate extends Scene {
       this.$bus.off("try", onTry);
       this.$bus.off("gamestate", onGameState);
     });
+  }
+  cleanup() {
+    //delete variables in gameState so its all good next time
+    delete this.gameState.value.data.scores;
+  }
+  handleAction(args) {
+    if (args.data.type == "endgame") {
+      this.gameState.value.data.results = calculateResults(this.gameState);
+      this.gameState.value.data.hasEnded = true;
+      this.$bus.emit("update", this.gameState.value.data);
+    }
+    if (args.data.type == "add") {
+      this.gameState.value.data.scores[args.data.playerId] += args.data.amount;
+      this.$bus.emit("update", this.gameState.value.data);
+    }
   }
 }

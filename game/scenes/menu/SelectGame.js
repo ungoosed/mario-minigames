@@ -118,13 +118,11 @@ export class SelectGame extends Scene {
     this.drawPlayerLabels();
     let onTry = function (args) {
       if (
-        args?.data?.type == "setcategory" &&
-        args?.id == this.gameState.value.data?.turn &&
-        allGames.find((c) => {
-          return c.indexOf(args?.data?.category) != -1;
-        })
+        args.data.type == "setcategory" &&
+        args.id == this.gameState.value.data.turn &&
+        categories.includes(args.data.category)
       ) {
-        this.gameState.value.data.category = args.data?.category;
+        this.gameState.value.data.category = args.data.category;
         this.$bus.emit("update", this.gameState.value.data);
       }
       if (

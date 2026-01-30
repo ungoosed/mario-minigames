@@ -29,10 +29,11 @@ export class Results extends Scene {
       this.startButton.disableInteractive().setFrame(1);
     }
     this.startButton.on("pointerdown", () => {
-      if (this.gameState.value.data.turn == this.userData.value.id) {
-        this.gameState.value.data.game = "SelectGame";
-        this.gameState.value.data.turn = this.results[0];
-        this.$bus.emit("update", this.gameState.value.data);
+      if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.handleAction({
+          id: this.userData.value.id,
+          data: { type: "next" },
+        });
       } else {
         this.$bus.emit("action", { type: "next" });
       }
@@ -44,11 +45,7 @@ export class Results extends Scene {
       }
     }.bind(this);
     let onTry = function (args) {
-      if (args.type == "next") {
-        this.gameState.value.data.game = "SelectGame";
-        this.gameState.value.data.turn = this.results[0];
-        this.$bus.emit("update", this.gameState.value.data);
-      }
+      this.handleAction(args);
     }.bind(this);
     let onError = function () {}.bind(this);
     this.$bus.on("try", onTry);
@@ -60,5 +57,12 @@ export class Results extends Scene {
       this.$bus.off("try", onTry);
       this.$bus.off("gamestate", onGameState);
     });
+  }
+  handleAction(args) {
+    if (args.data.type == "next") {
+      this.gameState.value.data.game = "SelectGame";
+      this.gameState.value.data.turn = this.results[0];
+      this.$bus.emit("update", this.gameState.value.data);
+    }
   }
 }

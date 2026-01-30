@@ -12,5 +12,6 @@ export default function calculateResults(gameState) {
       results.push(gameState.value.users[i].id);
     }
   }
+  console.log(results);
   return results;
 }
