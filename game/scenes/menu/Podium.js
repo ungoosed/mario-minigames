@@ -3,9 +3,9 @@ import generateHand from "~/game/utils/picture-poker/generateHand";
 import loadAssets from "~/game/utils/loadAssets";
 import getPlacements from "~/game/utils/getPlacements";
 import makeHoverable from "~/game/utils/makeHoverable";
-export class Results extends Scene {
+export class Podium extends Scene {
   constructor() {
-    super("Results");
+    super("Podium");
     this.gameState = useGameState("gameState");
     this.userData = useUserData("userData");
     this.$bus = useNuxtApp().$bus;
