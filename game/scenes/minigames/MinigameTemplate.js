@@ -24,7 +24,7 @@ export class MinigameTemplate extends Scene {
   }
   init(args) {
     this.rounds = args.rounds;
-    this.rewardPoints = args.points;
+    this.points = args.points;
   }
   create() {
     this.add.bitmapText(
@@ -105,6 +105,7 @@ export class MinigameTemplate extends Scene {
         this.scene.start("Results", {
           results: results,
           game: this.gameState.value.data.game,
+          points: this.points,
         });
       } else {
         for (let i = 0; i < this.gameState.value.users.length; i++) {

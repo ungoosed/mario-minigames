@@ -125,7 +125,6 @@ export default defineWebSocketHandler({
           users: [],
           data: {},
         };
-        console.log("created room");
         rooms[content.roomKey].users.push({
           uuid: meta.uuid,
           id: meta.id,
@@ -134,7 +133,6 @@ export default defineWebSocketHandler({
         });
         peer.subscribe(content.roomKey);
         broadcastGameState(content.roomKey, peer);
-        console.log("bufere!");
       } else {
         peer.send(JSON.stringify({ type: "error", reason: "name-taken" }));
       }
@@ -170,7 +168,6 @@ export default defineWebSocketHandler({
     if (meta.type == "leave") {
       // params: type, uuid
       let userData = findUser(meta.uuid);
-      console.log(userData);
       peer.publish(
         userData.roomKey,
         JSON.stringify({ type: "error", reason: "disconnect" }),
@@ -184,8 +181,17 @@ export default defineWebSocketHandler({
         findUser(meta.uuid)
       ) {
         if (users[content.target]) {
+          //if the update is a targeted update
           sendGameState(content.roomKey, users[content.target], content.data);
+        } else if (content.points) {
+          //if the update is a points update
+          //update all users with the new points
+          for (let i = 0; i < content.points.length; i++) {
+            rooms[content.roomKey].users[i].points = content.points[i];
+          }
+          broadcastGameState(content.roomKey, peer);
         } else {
+          //if the update is a normal gameState update
           rooms[content.roomKey].data = content.data;
           broadcastGameState(content.roomKey, peer);
         }

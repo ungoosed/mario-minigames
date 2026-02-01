@@ -124,6 +124,20 @@ function update(args) {
         }),
     );
 }
+function updatePoints(args) {
+    //args is an object with all the players points, with the [id] giving the points value
+    console.log(args);
+    send(
+        JSON.stringify({
+            type: "update",
+            uuid: userData.value.uuid,
+            content: {
+                roomKey: gameState.value.roomKey,
+                points: args,
+            },
+        }),
+    );
+}
 function targetUpdate(args) {
     send(
         JSON.stringify({
@@ -156,6 +170,8 @@ $bus.on("refreshrooms", refreshRooms);
 $bus.on("joinroom", joinRoom);
 $bus.on("leaveroom", leaveRoom);
 $bus.on("update", update);
+$bus.on("updatepoints", updatePoints);
+
 $bus.on("targetupdate", targetUpdate);
 $bus.on("action", action);
 
@@ -166,6 +182,7 @@ onUnmounted(async () => {
     $bus.off("leaveroom", leaveRoom);
     $bus.off("targetupdate", targetUpdate);
     $bus.off("update", update);
+    $bus.off("updatepoints", updatePoints);
     $bus.off("action", action);
 });
 </script>

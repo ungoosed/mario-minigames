@@ -10,6 +10,7 @@ import { GameSettings } from "./scenes/menu/GameSettings";
 import { MinigameTemplate } from "./scenes/minigames/MinigameTemplate";
 import { Results } from "./scenes/menu/Results";
 import { Error } from "./scenes/Error";
+import { Podium } from "./scenes/menu/Podium";
 export const createGame = (config = {}) =>
   new Phaser.Game({
     type: Phaser.AUTO,
@@ -54,6 +55,7 @@ export const createGame = (config = {}) =>
       GameSettings,
       MinigameTemplate,
       Results,
+      Podium,
       Error,
     ],
   });

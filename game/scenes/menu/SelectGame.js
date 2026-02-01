@@ -11,6 +11,8 @@ export class SelectGame extends Scene {
     this.$bus = useNuxtApp().$bus;
   }
   create() {
+    console.log(this.gameState.value);
+
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(0, 150, "dialogue-background1").setOrigin(0, 0);
