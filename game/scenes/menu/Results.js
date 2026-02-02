@@ -46,11 +46,17 @@ export class Results extends Scene {
     //show player labels
     this.givePoints();
     this.drawPlayerLabels();
+    console.log(
+      this.gameState.value.users.some((c) => {
+        return c.points >= 200;
+      }),
+    );
+
     let onGameState = function () {
       if (this.gameState.value.data.game == "SelectGame") {
         if (
-          this.gameState.value.data.users.some((c) => {
-            c.points >= 200;
+          this.gameState.value.users.some((c) => {
+            return c.points >= 200;
           })
         ) {
           console.log("winwinwinwinwinahhahaha");

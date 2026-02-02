@@ -20,9 +20,26 @@ export class Podium extends Scene {
     this.add.image("luigi-label-large", 128, 200).setOrigin(0.5, 0);
     //title
     this.add.bitmapText(128, 8, "ds", "Podium").setOrigin(0.5, 0);
-
+    this.startButton = makeHoverable(this.add.image(128, 300, "start-button"));
+    this.startButton.on("pointerdown", () => {
+      if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.handleAction({
+          id: this.userData.value.id,
+          data: { type: "next" },
+        });
+      } else {
+        this.$bus.emit("action", { type: "next" });
+      }
+    });
     //handle communications
-    let onGameState = function () {}.bind(this);
+    let onGameState = function () {
+      if (this.gameState.value.data.game == "done") {
+        console.log("winwinwinwinwinahhahaha");
+        this.scene.start("MainMenu");
+        //disconnect
+        this.$bus.emit("leaveroom");
+      }
+    }.bind(this);
     let onTry = function (args) {
       this.handleAction(args);
     }.bind(this);
@@ -38,5 +55,10 @@ export class Podium extends Scene {
     });
   }
   //handle "try" requests
-  handleAction(args) {}
+  handleAction(args) {
+    if (args.data.type == "next") {
+      this.gameState.value.data.game = "done";
+      this.$bus.emit("update", this.gameState.value.data);
+    }
+  }
 }

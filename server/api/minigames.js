@@ -168,11 +168,13 @@ export default defineWebSocketHandler({
     if (meta.type == "leave") {
       // params: type, uuid
       let userData = findUser(meta.uuid);
-      peer.publish(
-        userData.roomKey,
-        JSON.stringify({ type: "error", reason: "disconnect" }),
-      );
-      destroyRoom(userData.roomKey);
+      if (userData.roomKey) {
+        peer.publish(
+          userData.roomKey,
+          JSON.stringify({ type: "error", reason: "disconnect" }),
+        );
+        destroyRoom(userData.roomKey);
+      }
     }
     if (meta.type == "update") {
       // params: type, uuid, content: {roomKey, data}
