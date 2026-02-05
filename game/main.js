@@ -7,10 +7,10 @@ import { RoomLobby } from "./scenes/menu/RoomLobby";
 import { SelectGame } from "./scenes/menu/SelectGame";
 import { SetProfile } from "./scenes/menu/SetProfile";
 import { GameSettings } from "./scenes/menu/GameSettings";
-import { MinigameTemplate } from "./scenes/minigames/MinigameTemplate";
 import { Results } from "./scenes/menu/Results";
 import { Error } from "./scenes/Error";
 import { Podium } from "./scenes/menu/Podium";
+//load menu scenes, minigames will b loaded dynamically
 export const createGame = (config = {}) =>
   new Phaser.Game({
     type: Phaser.AUTO,
@@ -53,7 +53,6 @@ export const createGame = (config = {}) =>
       SetProfile,
       SelectGame,
       GameSettings,
-      MinigameTemplate,
       Results,
       Podium,
       Error,

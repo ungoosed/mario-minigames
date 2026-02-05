@@ -1,10 +1,11 @@
 import { Scene } from "phaser";
 import generateHand from "~/game/utils/picture-poker/generateHand";
-import generateMenu from "~/game/utils/generateMenu";
 import loadAssets from "~/game/utils/loadAssets";
+import makeHoverable from "~/game/utils/makeHoverable";
+import calculateResults from "~/game/utils/minigame-template/calculateResults";
 export default class PicturePoker extends Scene {
   constructor() {
-    super("picture-poker");
+    super("PicturePoker");
     this.gameState = useGameState("gameState");
     this.userData = useUserData("userData");
     this.$bus = useNuxtApp().$bus;
@@ -18,161 +19,134 @@ export default class PicturePoker extends Scene {
       "mario-card": "assets/minigames/table/mario-card.png",
       "star-card": "assets/minigames/table/back-card.png",
     };
+    this.increaseButtons = {};
+    this.scoreTexts = [];
+  }
+  init(args) {
+    this.rounds = args.rounds;
+    this.points = args.points;
   }
   create() {
-    this.handleMenu();
-    loadAssets(this, this.assets);
-    this.load.start();
-    this.load.once("complete", () => {
-      this.$bus.emit("action", { type: "ready" });
-      (this.add.image(0, 0, "casino-background").setOrigin(0, 0).setDepth(-1),
-        this.add
-          .image(0, 192, "casino-background")
-          .setOrigin(0, 0)
-          .setDepth(-1),
-        (this.cards = []));
-      for (let i = 0; i < 5; i++) {
-        let card = this.add.sprite(20 + i * 20, 300);
+    this.add.bitmapText(
+      0,
+      0,
+      "dense",
+      "Rounds: " + this.rounds + "\nPoints:" + this.points,
+    );
+    for (let i = 0; i < this.gameState.value.users.length; i++) {
+      let button = (this.increaseButtons[i] = makeHoverable(
+        this.add.image(50, 50 + 30 * i, "blank-button-small"),
+      ));
+      let name = this.add
+        .bitmapText(50, 51 + i * 30, "ds", this.gameState.value.users[i].name)
+        .setOrigin(0.5, 1);
+      this.scoreTexts[i] = this.add
+        .bitmapText(
+          100,
+          150 + i * 30,
+          "ds",
+          this.gameState.value.users[i].name +
+            "'s score: " +
+            this.gameState.value.data.scores[this.gameState.value.users[i].id],
+        )
+        .setOrigin(0.5, 1);
 
-        this.cards.push(card);
+      button.on("pointerover", () => {
+        name.setPosition(50, 53 + i * 30);
+      });
+      button.on("pointerout", () => {
+        name.setPosition(50, 50 + i * 30);
+      });
+      button.on("pointerdown", () => {
+        if (this.gameState.value.users[0].id == this.userData.value.id) {
+          this.handleAction({
+            id: this.userData.value.id,
+            data: {
+              type: "add",
+              playerId: this.gameState.value.users[i].id,
+              amount: 25,
+            },
+          });
+        } else {
+          this.$bus.emit("action", {
+            type: "add",
+            playerId: this.gameState.value.users[i].id,
+            amount: 25,
+          });
+        }
+      });
+    }
+    this.endButton = makeHoverable(
+      this.add.image(200, 90, "blank-button-small"),
+    );
+    let endText = this.add
+      .bitmapText(200, 91, "ds", "end game")
+      .setOrigin(0.5, 1);
+
+    //transition to results screen
+    this.endButton.on("pointerdown", () => {
+      if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.handleAction({
+          id: this.userData.value.id,
+          data: {
+            type: "endgame",
+          },
+        });
+      } else {
+        this.$bus.emit("action", {
+          type: "endgame",
+        });
       }
     });
     let onGameState = function () {
-      console.log(this.gameState.value);
-      if (this.gameState.value.data.round > 0) {
-      }
-    }.bind(this);
-    let onTry = function () {}.bind(this);
-    this.$bus.on("try", onTry);
-    this.$bus.on("gamestate", onGameState);
-  }
-  update() {}
-  handleMenu() {
-    // generate menu object
-
-    this.menu = generateMenu(
-      this,
-      {
-        title: "Picture Poker",
-        description: "eesiofl sjfc ksnv mn dm",
-        inputs: [
-          {
-            type: "picker",
-            labels: ["3 Rounds", "5 Rounds", "7 Rounds"],
-            update: () => {
-              if (this.gameState.value.users[0] == this.userData.id) {
-                this.gameState.value.data.numRounds == this.menu.inputs[0];
-
-                this.$bus.emit("update", this.gameState.value.data);
-              } else {
-                this.$bus.emit("action", {
-                  type: "numRounds",
-                  rounds: this.menu.inputs[0],
-                });
-              }
-            },
-          },
-        ],
-      },
-      () => {
-        if ((this.gameState.value.users[0].id = this.userData.id)) {
-          this.initializeState();
-        } else {
-          this.$bus.emit("action", { type: "begin" });
-        }
-      },
-    );
-    this.menu.start.setVisible(false);
-    // menu event listeners
-    let onGameState = function () {
-      if (this.gameState.value.data.round > 0) {
-        this.menu.hide();
+      if (this.gameState.value.data.hasEnded) {
+        let results = calculateResults(this.gameState);
+        this.cleanup();
+        this.scene.start("Results", {
+          results: results,
+          game: this.gameState.value.data.game,
+          points: this.points,
+        });
       } else {
-        if (
-          this.gameState.value.data.ready.length ==
-            this.gameState.value.users.length &&
-          this.gameState.value.data.round != 1
-        ) {
-          this.menu.start.setVisible(true);
-          if (this.gameState.value.data.turn == this.userData.value.id) {
-            this.menu.enableInput();
-          } else {
-            this.menu.disableInput();
-          }
-          // show and make start button interactive
-        } else {
-          this.menu.start.setVisible(false);
-        }
-        if (this.gameState.value.data.numRounds != undefined) {
-          this.menu.set(0, this.gameState.value.data.numRounds);
+        for (let i = 0; i < this.gameState.value.users.length; i++) {
+          console.log(this.scoreTexts[i]?.active, this.scoreTexts[i]?.scene);
+          this.scoreTexts[i].setText(
+            this.gameState.value.users[i].name +
+              "'s score: " +
+              this.gameState.value.data.scores[
+                this.gameState.value.users[i].id
+              ],
+          );
         }
       }
     }.bind(this);
     let onTry = function (args) {
-      if (args?.data?.type == "ready") {
-        if (!this.gameState.value.data.ready) {
-          this.gameState.value.data.ready = [];
-        }
-        this.gameState.value.data.ready.push(args?.id);
-        this.$bus.emit("update", this.gameState.value.data);
-      }
-      if (
-        args?.data?.type == "numRounds" &&
-        args?.id == this.gameState.value.data.turn
-      ) {
-        this.gameState.value.data.numRounds = args?.data.rounds;
-        this.$bus.emit("update", this.gameState.value.data);
-      }
-      if (args?.data?.type == "begin") {
-        this.initializeState();
-      }
+      this.handleAction(args);
     }.bind(this);
-    this.$bus.on("gamestate", onGameState);
+    let onError = function () {}.bind(this);
     this.$bus.on("try", onTry);
-    // load game specific assets
+    this.$bus.on("error", onError);
+    this.$bus.on("gamestate", onGameState);
+
     this.events.on("shutdown", () => {
-      this.$bus.off("gamestate", onGameState);
+      this.$bus.off("error", onError);
       this.$bus.off("try", onTry);
+      this.$bus.off("gamestate", onGameState);
     });
   }
-  initializeState() {
-    this.gameState.value.data.round = 1;
-    if (!this.gameState.value.data.numRounds) {
-      this.gameState.value.data.numRounds = 0;
+  cleanup() {
+    //delete variables in gameState so its all good next time
+    delete this.gameState.value.data.scores;
+  }
+  handleAction(args) {
+    if (args.data.type == "endgame") {
+      this.gameState.value.data.results = calculateResults(this.gameState);
+      this.gameState.value.data.hasEnded = true;
+      this.$bus.emit("update", this.gameState.value.data);
     }
-    this.gameState.value.data.users = [];
-    for (let i = 0; i < this.gameState.value.users.length; i++) {
-      let hand = generateHand();
-      this.gameState.value.data.users.push({
-        id: this.gameState.value.users[i].id,
-        coins: 0,
-        hand: hand,
-      });
-      let strippedCopy = structuredClone(toRaw(this.gameState.value.data));
-
-      let strippedCards = [];
-      for (let k = 0; k < this.gameState.value.users.length; k++) {
-        if (k == i) {
-          strippedCards.push({
-            id: this.gameState.value.users[i].id,
-            coins: 0,
-            hand: hand,
-          });
-        } else {
-          strippedCards.push({
-            id: this.gameState.value.users[i].id,
-            coins: 0,
-            hand: [0, 0, 0, 0, 0],
-          });
-        }
-      }
-      strippedCopy.users = strippedCards;
-      this.$bus.emit(
-        "targetupdate",
-        strippedCopy,
-        this.gameState.value.users[i].id,
-      );
+    if (args.data.type == "add") {
+      this.gameState.value.data.scores[args.data.playerId] += args.data.amount;
+      this.$bus.emit("update", this.gameState.value.data);
     }
-    this.$bus.emit("update", this.gameState.value.data);
   }
 }

@@ -139,9 +139,8 @@ export class SelectGame extends Scene {
       updateCategories();
       updateThumbnails();
       if (this.gameState.value.data.game != "SelectGame") {
-        this.scene.start("GameSettings", {
-          game: this.gameState.value.data.game,
-        });
+        //[TODO] add check if game is valid
+        this.scene.start("GameSettings");
       }
     }.bind(this);
     let onError = function () {

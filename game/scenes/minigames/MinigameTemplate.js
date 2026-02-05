@@ -3,7 +3,7 @@ import generateHand from "~/game/utils/picture-poker/generateHand";
 import loadAssets from "~/game/utils/loadAssets";
 import makeHoverable from "~/game/utils/makeHoverable";
 import calculateResults from "~/game/utils/minigame-template/calculateResults";
-export class MinigameTemplate extends Scene {
+export default class MinigameTemplate extends Scene {
   constructor() {
     super("MinigameTemplate");
     this.gameState = useGameState("gameState");

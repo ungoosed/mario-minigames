@@ -1,7 +1,5 @@
-//display "joining room."
-// add uuid to list of users in room
-// request list of users in specific room, using uuid as authentication
-// display all current users, max users, etc.
+//dynamically load selected scene
+const minigames = import.meta.glob("~/game/scenes/minigames/*.js");
 import makeHoverable from "~/game/utils/makeHoverable";
 import { Scene } from "phaser";
 import { UI_CONFIG } from "~/game/constants/constants";
@@ -13,8 +11,7 @@ export class GameSettings extends Scene {
     this.userData = useUserData("userData");
     this.$bus = useNuxtApp().$bus;
   }
-  init(args) {
-    this.game = args.game;
+  init() {
     this.rounds = 5;
     this.points = 25;
     this.gameState.value.data.hasBegun = false;
@@ -22,6 +19,45 @@ export class GameSettings extends Scene {
   }
 
   create() {
+    //load selected gamee in background
+    if (
+      !this.scene.get(
+        this.gameState.value.data.game
+          .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+          .replace(/^./, (match) => match.toUpperCase()),
+      )
+    ) {
+      minigames[
+        `/game/scenes/minigames/${this.gameState.value.data.game
+          .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+          .replace(/^./, (match) => match.toUpperCase())}.js`
+      ]().then((module) => {
+        this.scene.add(this.gameState.value.data?.game, module.default);
+        if (this.gameState.value.users[0].id == this.userData.value.id) {
+          this.handleAction({
+            id: this.userData.value.id,
+            data: {
+              type: "loaded",
+            },
+          });
+        } else {
+          this.$bus.emit("action", { type: "loaded" });
+        }
+      });
+    } else {
+      if (this.gameState.value.users[0].id == this.userData.value.id) {
+        this.handleAction({
+          id: this.userData.value.id,
+          data: {
+            type: "loaded",
+          },
+        });
+      } else {
+        this.$bus.emit("action", { type: "loaded" });
+      }
+    }
+
+    //normal stuff
     this.add.image(0, 0, "menu-background").setOrigin(0, 0);
     this.add.image(0, 192, "menu-background").setOrigin(0, 0);
     this.add.image(0, 4, "title-background").setOrigin(0, 0);
@@ -70,36 +106,31 @@ export class GameSettings extends Scene {
       this.scene.wake("Error");
     }.bind(this);
     let onGameState = function () {
-      if (this.gameState.value.data.hasBegun == true) {
-        console.log("begin");
-      }
-      if (this.gameState.value.data.game == "SelectGame") {
-        this.scene.start("SelectGame");
-      }
-      if (this.gameState.value.data.hasBegun == true) {
-        this.scene.start("MinigameTemplate", {
-          rounds: this.rounds,
-          points: this.points,
-        });
+      if (this.gameState.value.data.fullyLoaded) {
+        //mak button clickable
+        if (this.gameState.value.data.turn == this.userData.value.id) {
+          this.startButton.setFrame(0).setInteractive();
+        }
+        if (this.gameState.value.data.hasBegun) {
+          this.scene.start(
+            this.gameState.value.data.game
+              .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+              .replace(/^./, (match) => match.toUpperCase()),
+            {
+              rounds: this.rounds,
+              points: this.points,
+            },
+          );
+        }
+        if (this.gameState.value.data.game == "SelectGame") {
+          this.scene.start("SelectGame");
+        }
       }
     }.bind(this);
+
     let onTry = function (args) {
       //args.id and args.data
-      if (
-        args.data.type == "back" &&
-        args.id == this.gameState.value.data.turn
-      ) {
-        this.gameState.value.data.game = "SelectGame";
-        this.$bus.emit("update", this.gameState.value.data);
-      }
-      if (
-        args.data.type == "startgame" &&
-        args.id == this.gameState.value.data.turn
-      ) {
-        this.gameState.value.data.hasBegun = true;
-        initializeGameState(this.gameState);
-        this.$bus.emit("update", this.gameState.value.data);
-      }
+      this.handleAction(args);
     }.bind(this);
     this.$bus.on("gamestate", onGameState);
     this.$bus.on("try", onTry);
@@ -111,5 +142,30 @@ export class GameSettings extends Scene {
       this.$bus.off("gamestate", onGameState);
     });
   }
-  update() {}
+  handleAction(args) {
+    if (args.data.type == "loaded") {
+      if (!this.gameState.value.data.loadedPlayers) {
+        this.gameState.value.data.loadedPlayers = {};
+      }
+      this.gameState.value.data.loadedPlayers[args.id] = true;
+      if (
+        Object.values(this.gameState.value.data.loadedPlayers).every(Boolean)
+      ) {
+        this.gameState.value.data.fullyLoaded = true;
+        this.$bus.emit("update", this.gameState.value.data);
+      }
+    }
+    if (args.data.type == "back" && args.id == this.gameState.value.data.turn) {
+      this.gameState.value.data.game = "SelectGame";
+      this.$bus.emit("update", this.gameState.value.data);
+    }
+    if (
+      args.data.type == "startgame" &&
+      args.id == this.gameState.value.data.turn
+    ) {
+      this.gameState.value.data.hasBegun = true;
+      initializeGameState(this.gameState);
+      this.$bus.emit("update", this.gameState.value.data);
+    }
+  }
 }
