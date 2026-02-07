@@ -3,7 +3,6 @@ const minigames = import.meta.glob("~/game/scenes/minigames/*.js");
 import makeHoverable from "~/game/utils/makeHoverable";
 import { Scene } from "phaser";
 import { UI_CONFIG } from "~/game/constants/constants";
-import initializeGameState from "~/game/utils/minigame-template/initializeGameState";
 export class GameSettings extends Scene {
   constructor() {
     super("GameSettings");
@@ -27,11 +26,14 @@ export class GameSettings extends Scene {
           .replace(/^./, (match) => match.toUpperCase()),
       )
     ) {
-      minigames[
-        `/game/scenes/minigames/${this.gameState.value.data.game
-          .replace(/-./g, (match) => match.charAt(1).toUpperCase())
-          .replace(/^./, (match) => match.toUpperCase())}.js`
-      ]().then((module) => {
+      this.minigameModulePromise =
+        minigames[
+          `/game/scenes/minigames/${this.gameState.value.data.game
+            .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+            .replace(/^./, (match) => match.charAt(0).toUpperCase())}.js`
+        ]();
+      this.minigameModulePromise.then((module) => {
+        this.minigameSetup = module.setup;
         this.scene.add(this.gameState.value.data?.game, module.default);
         if (this.gameState.value.users[0].id == this.userData.value.id) {
           this.handleAction({
@@ -45,6 +47,17 @@ export class GameSettings extends Scene {
         }
       });
     } else {
+      if (!this.minigameModulePromise) {
+        this.minigameModulePromise =
+          minigames[
+            `/game/scenes/minigames/${this.gameState.value.data.game
+              .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+              .replace(/^./, (match) => match.charAt(0).toUpperCase())}.js`
+          ]();
+        this.minigameModulePromise.then((module) => {
+          this.minigameSetup = module.setup;
+        });
+      }
       if (this.gameState.value.users[0].id == this.userData.value.id) {
         this.handleAction({
           id: this.userData.value.id,
@@ -69,9 +82,12 @@ export class GameSettings extends Scene {
     }
     this.startButton.on("pointerdown", () => {
       if (this.gameState.value.users[0].id == this.userData.value.id) {
-        this.gameState.value.data.hasBegun = true;
-        initializeGameState(this.gameState);
-        this.$bus.emit("update", this.gameState.value.data);
+        this.handleAction({
+          id: this.userData.value.id,
+          data: {
+            type: "startgame",
+          },
+        });
       } else {
         this.$bus.emit("action", { type: "startgame" });
       }
@@ -112,15 +128,22 @@ export class GameSettings extends Scene {
           this.startButton.setFrame(0).setInteractive();
         }
         if (this.gameState.value.data.hasBegun) {
-          this.scene.start(
-            this.gameState.value.data.game
-              .replace(/-./g, (match) => match.charAt(1).toUpperCase())
-              .replace(/^./, (match) => match.toUpperCase()),
-            {
+          const minigameKey = this.gameState.value.data.game
+            .replace(/-./g, (match) => match.charAt(1).toUpperCase())
+            .replace(/^./, (match) => match.charAt(0).toUpperCase());
+          const startMinigame = () => {
+            this.scene.start(minigameKey, {
               rounds: this.rounds,
               points: this.points,
-            },
-          );
+            });
+          };
+          if (this.minigameModulePromise) {
+            this.minigameModulePromise.then(() => {
+              startMinigame();
+            });
+          } else {
+            startMinigame();
+          }
         }
         if (this.gameState.value.data.game == "SelectGame") {
           this.scene.start("SelectGame");
@@ -163,8 +186,11 @@ export class GameSettings extends Scene {
       args.data.type == "startgame" &&
       args.id == this.gameState.value.data.turn
     ) {
+      if (typeof this.minigameSetup === "function") {
+        this.minigameSetup(this.gameState);
+      }
       this.gameState.value.data.hasBegun = true;
-      initializeGameState(this.gameState);
+
       this.$bus.emit("update", this.gameState.value.data);
     }
   }

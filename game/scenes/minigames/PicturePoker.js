@@ -9,73 +9,66 @@ export default class PicturePoker extends Scene {
     this.gameState = useGameState("gameState");
     this.userData = useUserData("userData");
     this.$bus = useNuxtApp().$bus;
-    this.assets = {
-      "casino-background": "assets/minigames/table/casino-background.png",
-      "back-card": "assets/minigames/table/back-card.png",
-      "cloud-card": "assets/minigames/table/cloud-card.png",
-      "mushroom-card": "assets/minigames/table/mushroom-card.png",
-      "flower-card": "assets/minigames/table/flower-card.png",
-      "luigi-card": "assets/minigames/table/luigi-card.png",
-      "mario-card": "assets/minigames/table/mario-card.png",
-      "star-card": "assets/minigames/table/back-card.png",
-    };
     this.increaseButtons = {};
     this.scoreTexts = [];
   }
   init(args) {
     this.rounds = args.rounds;
     this.points = args.points;
+    this.activePlayer = this.gameState.value.data.turn;
+    this.hands = [];
+    this.selectedCards = [];
+    this.coins = [];
+    this.cards = [];
+    this.CARDTYPES = [
+      "back-card",
+      "cloud-card",
+      "mushroom-card",
+      "flower-card",
+      "luigi-card",
+      "mario-card",
+      "star-card",
+    ];
+  }
+  preload() {
+    this.load.setPath("assets/minigames/table");
+    this.load.spritesheet("back-card", "back-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("cloud-card", "cloud-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("mushroom-card", "mushroom-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("flower-card", "flower-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("luigi-card", "luigi-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("mario-card", "mario-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("star-card", "star-card.png", {
+      frameWidth: 32,
+      frameHeight: 48,
+    });
   }
   create() {
+    console.log(this.gameState.value.data);
     this.add.bitmapText(
       0,
       0,
       "dense",
       "Rounds: " + this.rounds + "\nPoints:" + this.points,
     );
-    for (let i = 0; i < this.gameState.value.users.length; i++) {
-      let button = (this.increaseButtons[i] = makeHoverable(
-        this.add.image(50, 50 + 30 * i, "blank-button-small"),
-      ));
-      let name = this.add
-        .bitmapText(50, 51 + i * 30, "ds", this.gameState.value.users[i].name)
-        .setOrigin(0.5, 1);
-      this.scoreTexts[i] = this.add
-        .bitmapText(
-          100,
-          150 + i * 30,
-          "ds",
-          this.gameState.value.users[i].name +
-            "'s score: " +
-            this.gameState.value.data.scores[this.gameState.value.users[i].id],
-        )
-        .setOrigin(0.5, 1);
-
-      button.on("pointerover", () => {
-        name.setPosition(50, 53 + i * 30);
-      });
-      button.on("pointerout", () => {
-        name.setPosition(50, 50 + i * 30);
-      });
-      button.on("pointerdown", () => {
-        if (this.gameState.value.users[0].id == this.userData.value.id) {
-          this.handleAction({
-            id: this.userData.value.id,
-            data: {
-              type: "add",
-              playerId: this.gameState.value.users[i].id,
-              amount: 25,
-            },
-          });
-        } else {
-          this.$bus.emit("action", {
-            type: "add",
-            playerId: this.gameState.value.users[i].id,
-            amount: 25,
-          });
-        }
-      });
-    }
     this.endButton = makeHoverable(
       this.add.image(200, 90, "blank-button-small"),
     );
@@ -98,6 +91,9 @@ export default class PicturePoker extends Scene {
         });
       }
     });
+
+    this.createCardObjects();
+
     let onGameState = function () {
       if (this.gameState.value.data.hasEnded) {
         let results = calculateResults(this.gameState);
@@ -109,7 +105,6 @@ export default class PicturePoker extends Scene {
         });
       } else {
         for (let i = 0; i < this.gameState.value.users.length; i++) {
-          console.log(this.scoreTexts[i]?.active, this.scoreTexts[i]?.scene);
           this.scoreTexts[i].setText(
             this.gameState.value.users[i].name +
               "'s score: " +
@@ -144,9 +139,39 @@ export default class PicturePoker extends Scene {
       this.gameState.value.data.hasEnded = true;
       this.$bus.emit("update", this.gameState.value.data);
     }
-    if (args.data.type == "add") {
-      this.gameState.value.data.scores[args.data.playerId] += args.data.amount;
-      this.$bus.emit("update", this.gameState.value.data);
+  }
+  createCardObjects() {
+    for (let i = 0; i < this.gameState.value.users.length; i++) {
+      this.cards[i] = [];
+      console.log(this.cards);
+      for (let c = 0; c < this.gameState.value.data.hands[i].length; c++) {
+        this.cards[i][c] = this.add.image(
+          30 + c * 40,
+          30 + i * 48,
+          this.CARDTYPES[this.gameState.value.data.hands[i][c]],
+          1,
+        );
+      }
     }
+  }
+  dealHands() {
+    for (let i = 0; i < this.gameState.value.users.length; i++) {
+      this.gameState.value.data.hands[i] = generateHand();
+    }
+    this.$bus.emit("update", this.gameState.value.data);
+  }
+}
+export function setup(gs) {
+  console.log("setting up");
+  gs.value.data.scores = [];
+  gs.value.data.coins = [];
+  gs.value.data.hands = [];
+  gs.value.data.selectedCards = [];
+  gs.value.data.activePlayer =
+    gs.value.users[Math.floor(Math.random() * gs.value.users.length)].id;
+  for (let i = 0; i < gs.value.users.length; i++) {
+    gs.value.data.hands[i] = generateHand();
+    //hand is a array of 5 numbers between 1-6 corresponding to CARDTYPES
+    gs.value.data.coins[i] = 0;
   }
 }
