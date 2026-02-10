@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import generateHand from "~/game/utils/picture-poker/generateHand";
 import loadAssets from "~/game/utils/loadAssets";
+import indexOfUser from "~/game/utils/indexOfUser";
 import makeHoverable from "~/game/utils/makeHoverable";
 import calculateResults from "~/game/utils/minigame-template/calculateResults";
 export default class PicturePoker extends Scene {
@@ -103,15 +104,34 @@ export default class PicturePoker extends Scene {
           game: this.gameState.value.data.game,
           points: this.points,
         });
-      } else {
-        for (let i = 0; i < this.gameState.value.users.length; i++) {
-          this.scoreTexts[i].setText(
-            this.gameState.value.users[i].name +
-              "'s score: " +
-              this.gameState.value.data.scores[
-                this.gameState.value.users[i].id
-              ],
-          );
+      }
+      if (this.gameState.value.data.selectedCards != this.selectedCards) {
+        //update cards and play animations
+        if (this.gameState.value.data.activePlayer != this.userData.value.id) {
+          for (
+            let i = 0;
+            i <
+            this.cards[indexOfUser(this.gameState.value.data.activePlayer)]
+              .length;
+            i++
+          ) {
+            //play card going up/down animation
+            if (
+              this.selectedCards[i] !=
+              this.gameState.value.data.selectedCards[i]
+            ) {
+              if (this.gameState.value.data.selectedCards[i] == true) {
+                this.cards[indexOfUser(this.gameState.value.data.activePlayer)][
+                  i
+                ].y -= 5;
+              } else {
+                this.cards[indexOfUser(this.gameState.value.data.activePlayer)][
+                  i
+                ].y += 5;
+              }
+            }
+          }
+          this.selectedCards = this.gameState.value.data.selectedCards;
         }
       }
     }.bind(this);
@@ -139,18 +159,73 @@ export default class PicturePoker extends Scene {
       this.gameState.value.data.hasEnded = true;
       this.$bus.emit("update", this.gameState.value.data);
     }
+    if (args.data.type == "select") {
+      if (args.id == this.gameState.value.data.activePlayer) {
+        this.gameState.value.data.selectedCards = args.data.cards;
+        this.$bus.emit("update", this.gameState.value.data);
+      }
+    }
   }
   createCardObjects() {
+    let passedPlayer = false;
+    let handLength = 5;
     for (let i = 0; i < this.gameState.value.users.length; i++) {
       this.cards[i] = [];
       console.log(this.cards);
-      for (let c = 0; c < this.gameState.value.data.hands[i].length; c++) {
-        this.cards[i][c] = this.add.image(
-          30 + c * 40,
-          30 + i * 48,
-          this.CARDTYPES[this.gameState.value.data.hands[i][c]],
-          1,
-        );
+      if (this.gameState.value.users[i].id == this.userData.value.id) {
+        // Your own cards
+        passedPlayer = true;
+        for (let c = 0; c < handLength; c++) {
+          this.cards[i][c] = this.add
+            .image(
+              30 + c * 40,
+              180,
+              this.CARDTYPES[this.gameState.value.data.hands[i][c]],
+              1,
+            )
+            .setInteractive();
+          this.cards[i][c].on("pointerdown", () => {
+            if (
+              this.gameState.value.data.activePlayer == this.userData.value.id
+            ) {
+              if (this.selectedCards[c]) {
+                // if already selected
+                this.selectedCards[c] = false;
+                this.cards[i][c].y += 5;
+              } else {
+                this.selectedCards[c] = true;
+                this.cards[i][c].y -= 5;
+              }
+              if (this.gameState.value.users[0].id == this.userData.value.id) {
+                this.handleAction({
+                  id: this.userData.value.id,
+                  data: {
+                    type: "select",
+                    cards: this.selectedCards,
+                  },
+                });
+              } else {
+                this.$bus.emit("action", {
+                  type: "select",
+                  cards: this.selectedCards,
+                });
+              }
+            }
+          });
+        }
+      } else {
+        // other people's cards
+        for (let c = 0; c < handLength; c++) {
+          console.log("asda");
+          let y = 30 + i * 48;
+          y -= passedPlayer ? 30 : 0;
+          this.cards[i][c] = this.add.image(
+            30 + c * 40,
+            y,
+            this.CARDTYPES[this.gameState.value.data.hands[i][c]],
+            1,
+          );
+        }
       }
     }
   }
