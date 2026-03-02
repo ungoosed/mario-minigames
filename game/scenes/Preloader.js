@@ -32,6 +32,7 @@ export class Preloader extends Scene {
     this.load.image("mario-label-large", "mario-label-large.png");
     this.load.image("wario-label-large", "wario-label-large.png");
     this.load.image("luigi-label-large", "luigi-label-large.png");
+    this.load.image("toobad", "toobad.png");
 
     this.load.image("menu-background", "menu-background.png");
     this.load.image("error-background", "error-background.png");
